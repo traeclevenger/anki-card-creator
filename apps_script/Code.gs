@@ -96,26 +96,24 @@ function handleAnalyzeImage(body) {
     'You always respond with valid JSON arrays only — no prose, no markdown fences.';
 
   const userPrompt =
-    'This image has a red percentage grid overlaid on it. ' +
-    'The numbers along the TOP edge are x_pct values (0 = left edge, 100 = right edge). ' +
-    'The numbers down the LEFT edge are y_pct values (0 = top edge, 100 = bottom edge). ' +
-    'Grid lines appear every 10%.\n\n' +
-    'Find every TEXT LABEL, name, number, or annotation printed on this study image that students need to memorize. ' +
-    'Focus on TEXT — labels on anatomical structures, numbered items, key terms written on the image. ' +
-    'Do NOT identify the structures themselves, only their text labels. ' +
-    'IGNORE any title, heading, or caption banner at the very top of the image (typically above y_pct 8).\n\n' +
-    'For each label provide:\n' +
-    '- label: the exact text as it appears on the image\n' +
-    '- x_pct: left edge of the box as % of image width — READ FROM THE GRID, use one decimal place (e.g. 23.5)\n' +
-    '- y_pct: top edge of the box as % of image height — READ FROM THE GRID, use one decimal place\n' +
-    '- w_pct: box width as % of image width (typically 8–20 for a text label)\n' +
-    '- h_pct: box height as % of image height (typically 3–8 for a single line of text)\n\n' +
-    'CRITICAL: Read coordinates directly off the grid — do NOT round to multiples of 5 or 10. ' +
-    'If a label sits between the 20 and 30 vertical lines and roughly 3/10 of the way across, use 23.0. ' +
-    'Size each box to just cover the text — not the structure it points to.\n\n' +
+    'This image has a blue coordinate grid overlaid on it, with labeled anchor points (blue boxes with white text). ' +
+    'Each anchor label shows "X,Y" where X = % from left edge (0–100) and Y = % from top edge (0–100). ' +
+    'Grid lines run every 10%.\n\n' +
+    'Your task: find every TEXT LABEL in this study image that students need to memorize — ' +
+    'muscle names in colored boxes, anatomical term labels, key terms with arrows or lines pointing to structures. ' +
+    'IGNORE: the overall image title/heading at the very top, and any reference numbers (1, 2, 3…) used as pointers.\n\n' +
+    'For each text label provide:\n' +
+    '- label: the exact text as it appears\n' +
+    '- cx_pct: X coordinate of the CENTER of the text label, as % of image width (use the nearest grid anchor to estimate precisely)\n' +
+    '- cy_pct: Y coordinate of the CENTER of the text label, as % of image height\n' +
+    '- w_pct: width of the text label box as % of image width\n' +
+    '- h_pct: height of the text label box as % of image height\n\n' +
+    'For cx_pct and cy_pct: find the two nearest anchor points on either side of the label and interpolate. ' +
+    'Example: a label halfway between "40,20" and "60,20" anchors has cx_pct=50. ' +
+    'Do NOT round to multiples of 10 — use one decimal place (e.g. 47.5).\n\n' +
     'Aim for 5–20 labels depending on image complexity.\n\n' +
     'Return ONLY a JSON array:\n' +
-    '[{"label":"term","x_pct":23.5,"y_pct":41.2,"w_pct":14.0,"h_pct":4.5}, ...]';
+    '[{"label":"Deltoid","cx_pct":18.5,"cy_pct":24.0,"w_pct":16.0,"h_pct":5.0}, ...]';
 
   const response = callClaude({
     model: MODEL,
@@ -147,11 +145,11 @@ function handleAnalyzeImage(body) {
   // Clamp percentages to valid range
   boxes = boxes.map(function(b) {
     return {
-      label: String(b.label || ''),
-      x_pct: Math.max(0, Math.min(95, Number(b.x_pct) || 0)),
-      y_pct: Math.max(0, Math.min(95, Number(b.y_pct) || 0)),
-      w_pct: Math.max(1, Math.min(100, Number(b.w_pct) || 10)),
-      h_pct: Math.max(1, Math.min(100, Number(b.h_pct) || 5))
+      label:  String(b.label || ''),
+      cx_pct: Math.max(1, Math.min(99, Number(b.cx_pct || b.x_pct) || 50)),
+      cy_pct: Math.max(1, Math.min(99, Number(b.cy_pct || b.y_pct) || 50)),
+      w_pct:  Math.max(1, Math.min(80, Number(b.w_pct) || 15)),
+      h_pct:  Math.max(1, Math.min(40, Number(b.h_pct) || 5))
     };
   });
 
