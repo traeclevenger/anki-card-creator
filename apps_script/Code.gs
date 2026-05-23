@@ -96,18 +96,25 @@ function handleAnalyzeImage(body) {
     'You always respond with valid JSON arrays only — no prose, no markdown fences.';
 
   const userPrompt =
-    'Analyze this study image and identify ALL key terms, labels, names, structures, numbers, ' +
-    'or concepts that would make good Anki flashcard blanks.\n\n' +
-    'For each element provide:\n' +
-    '- label: the text or concept to hide (exact text if visible, or a descriptive name)\n' +
-    '- x_pct: left edge of the bounding box as % of image width (0–100)\n' +
-    '- y_pct: top edge of the bounding box as % of image height (0–100)\n' +
-    '- w_pct: box width as % of image width\n' +
-    '- h_pct: box height as % of image height\n\n' +
-    'Make each box slightly larger than the element so it is fully covered. ' +
-    'Aim for 5–20 elements depending on image complexity.\n\n' +
+    'This image has a red percentage grid overlaid on it. ' +
+    'The numbers along the TOP edge are x_pct values (0 = left edge, 100 = right edge). ' +
+    'The numbers down the LEFT edge are y_pct values (0 = top edge, 100 = bottom edge). ' +
+    'Grid lines appear every 10%.\n\n' +
+    'Find every TEXT LABEL, name, number, or annotation printed on this study image that students need to memorize. ' +
+    'Focus on TEXT — labels on anatomical structures, numbered items, key terms written on the image. ' +
+    'Do NOT identify the structures themselves, only their text labels.\n\n' +
+    'For each label provide:\n' +
+    '- label: the exact text as it appears on the image\n' +
+    '- x_pct: left edge of the box as % of image width — READ FROM THE GRID, use one decimal place (e.g. 23.5)\n' +
+    '- y_pct: top edge of the box as % of image height — READ FROM THE GRID, use one decimal place\n' +
+    '- w_pct: box width as % of image width (typically 8–20 for a text label)\n' +
+    '- h_pct: box height as % of image height (typically 3–8 for a single line of text)\n\n' +
+    'CRITICAL: Read coordinates directly off the grid — do NOT round to multiples of 5 or 10. ' +
+    'If a label sits between the 20 and 30 vertical lines and roughly 3/10 of the way across, use 23.0. ' +
+    'Size each box to just cover the text — not the structure it points to.\n\n' +
+    'Aim for 5–20 labels depending on image complexity.\n\n' +
     'Return ONLY a JSON array:\n' +
-    '[{"label":"term","x_pct":25.0,"y_pct":40.0,"w_pct":15.0,"h_pct":5.0}, ...]';
+    '[{"label":"term","x_pct":23.5,"y_pct":41.2,"w_pct":14.0,"h_pct":4.5}, ...]';
 
   const response = callClaude({
     model: MODEL,
