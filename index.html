@@ -176,7 +176,7 @@
         <div style="margin-bottom:14px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
             <label style="margin-bottom:0">Target Deck</label>
-            <button class="btn-link" onclick="loadDecks()" title="Re-check Anki connection">↺ Retry</button>
+            <button class="btn-link" id="retry-btn" onclick="loadDecks()" title="Re-check Anki connection" style="display:none">↺ Retry</button>
           </div>
           <select id="deck-select" onchange="onDeckChange()" style="width:100%">
             <option value="">Loading decks…</option>
@@ -371,13 +371,18 @@
 
   // ── Decks ─────────────────────────────────────────────────────────────────────
   async function loadDecks() {
+    const retryBtn = document.getElementById('retry-btn');
     try {
       const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action: 'deckNames', version: 6 }) });
       const data = await res.json();
       const sel = document.getElementById('deck-select');
       sel.innerHTML = (data.result || []).sort().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
       sel.insertAdjacentHTML('beforeend', '<option value="__new__">+ Create new deck…</option>');
-    } catch (_) { document.getElementById('deck-select').innerHTML = '<option value="">Anki not found — open Anki first</option>'; }
+      retryBtn.style.display = 'none';
+    } catch (_) {
+      document.getElementById('deck-select').innerHTML = '<option value="">Anki not found — open Anki first</option>';
+      retryBtn.style.display = '';
+    }
   }
 
   function onDeckChange() { document.getElementById('new-deck-name').classList.toggle('visible', document.getElementById('deck-select').value === '__new__'); }
