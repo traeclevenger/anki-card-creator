@@ -19,7 +19,7 @@
     }
     .app-header-title { font-size: 1.1rem; font-weight: 700; color: #f8fafc; }
     .app-header-sub { color: #64748b; font-size: 0.8rem; }
-    .container { max-width: 900px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
 
     .card { background: #161e2a; border: 1px solid #1e3045; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
     .card-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7c88a8; margin-bottom: 14px; }
@@ -30,7 +30,7 @@
       color: #e2e8f0; font-size: 0.9rem; padding: 10px 12px; outline: none; transition: border-color 0.15s;
     }
     select:focus, textarea:focus, input:focus { border-color: #3d97cc; }
-    textarea { resize: vertical; min-height: 160px; font-family: inherit; line-height: 1.6; }
+    textarea { resize: vertical; min-height: 220px; font-family: inherit; line-height: 1.6; }
 
     .row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
     .row > * { flex: 1; }
@@ -87,7 +87,11 @@
     .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .actions { display: flex; gap: 10px; margin-top: 16px; }
+    .actions { display: flex; gap: 10px; margin-top: 0; padding: 12px 0 2px; position: sticky; bottom: 0; background: #161e2a; border-top: 1px solid #1e3045; z-index: 5; }
+    #card-table-scroll { max-height: 62vh; overflow-y: auto; }
+    #card-thead th { position: sticky; top: 0; background: #161e2a; z-index: 1; }
+    .btn-link { background: none; border: none; color: #3d97cc; cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; }
+    .btn-link:hover { text-decoration: underline; color: #60b4e8; }
     #empty-state { text-align: center; color: #4a5068; padding: 40px 0; font-size: 0.9rem; }
 
     .new-deck-input { display: none; }
@@ -127,6 +131,12 @@
     .occ-box-label::placeholder { color: #4a5068; }
     .occ-empty { color: #4a5068; font-size: 0.8rem; padding: 6px 0; }
 
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a4a6e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3d6090; }
+
     /* Two-column layout */
     .layout { display: flex; gap: 20px; align-items: flex-start; }
     .sidebar { flex: 0 0 260px; max-width: 260px; position: sticky; top: 72px; }
@@ -162,7 +172,10 @@
           </div>
         </div>
         <div style="margin-bottom:14px">
-          <label>Target Deck</label>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+            <label style="margin-bottom:0">Target Deck</label>
+            <button class="btn-link" onclick="loadDecks()" title="Re-check Anki connection">↺ Retry</button>
+          </div>
           <select id="deck-select" onchange="onDeckChange()" style="width:100%">
             <option value="">Loading decks…</option>
           </select>
@@ -203,7 +216,7 @@
     <div class="card-title">Image</div>
 
     <!-- Upload zone (shown before image loaded) -->
-    <div id="occ-upload">
+    <div id="occ-upload" ondragover="event.preventDefault();document.getElementById('occ-drop-zone').classList.add('drag')" ondragleave="document.getElementById('occ-drop-zone').classList.remove('drag')" ondrop="event.preventDefault();document.getElementById('occ-drop-zone').classList.remove('drag');if(event.dataTransfer.files.length)processOcclusionFile(event.dataTransfer.files[0])">
       <div class="upload-zone" id="occ-drop-zone" onclick="document.getElementById('occ-file-input').click()">
         <div>Drop an image here or click to browse</div>
         <div style="font-size:0.8rem;margin-top:4px;color:#4a5068">.jpg, .png, .gif, .webp supported</div>
@@ -251,7 +264,7 @@
 
   <!-- Generate (hidden for occlusion) -->
   <div id="generate-wrap" style="margin-bottom:20px">
-    <button class="btn btn-primary" id="generate-btn" onclick="generateCards()" style="width:100%;justify-content:center;padding:14px">
+    <button class="btn btn-primary" id="generate-btn" onclick="generateCards()" title="⌘Enter / Ctrl+Enter" style="width:100%;justify-content:center;padding:14px">
       Generate Cards with Claude
     </button>
     <div class="status" id="generate-status"></div>
@@ -264,19 +277,21 @@
       <button class="btn btn-ghost" onclick="addBlankCard()">+ Add Card</button>
     </div>
     <div id="empty-state">No cards yet. Generate some above.</div>
-    <table class="card-table" id="card-table" style="display:none">
-      <thead id="card-thead">
-        <tr>
-          <th style="width:38%">Front</th>
-          <th style="width:38%">Back</th>
-          <th style="width:18%">Tags</th>
-          <th style="width:6%"></th>
-        </tr>
-      </thead>
-      <tbody id="card-tbody"></tbody>
-    </table>
+    <div id="card-table-scroll">
+      <table class="card-table" id="card-table" style="display:none">
+        <thead id="card-thead">
+          <tr>
+            <th style="width:38%">Front</th>
+            <th style="width:38%">Back</th>
+            <th style="width:18%">Tags</th>
+            <th style="width:6%"></th>
+          </tr>
+        </thead>
+        <tbody id="card-tbody"></tbody>
+      </table>
+    </div>
     <div class="actions">
-      <button class="btn btn-success" id="add-btn" onclick="addToAnki()" style="flex:1;justify-content:center">Add to Anki</button>
+      <button class="btn btn-success" id="add-btn" onclick="addToAnki()" title="⌘⇧Enter / Ctrl+Shift+Enter" style="flex:1;justify-content:center">Add to Anki</button>
     </div>
     <div class="status" id="add-status"></div>
   </div>
@@ -802,9 +817,28 @@
   function showStatus(id, type, msg) {
     const el = document.getElementById(id);
     if (!el) return;
+    clearTimeout(el._autoHide);
     el.className = `status ${type}`; el.textContent = msg;
+    if (type === 'success') {
+      el._autoHide = setTimeout(() => { el.className = 'status'; }, 4000);
+    }
   }
   function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (!(e.metaKey || e.ctrlKey) || e.key !== 'Enter') return;
+    if (cardType === 'occlusion') return;
+    e.preventDefault();
+    if (e.shiftKey) { if (cards.length) addToAnki(); }
+    else generateCards();
+  });
+
+  // ── Mouse-wheel zoom on occlusion viewport ────────────────────────────────────
+  document.getElementById('occ-viewport').addEventListener('wheel', e => {
+    e.preventDefault();
+    if (e.deltaY < 0) zoomIn(); else zoomOut();
+  }, { passive: false });
 
   // Init
   loadDecks();
