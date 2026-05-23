@@ -119,7 +119,9 @@
     /* Image Occlusion editor */
     .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
     .occ-left { flex: 1; min-width: 0; }
-    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; height: calc(100vh - 78px); display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; height: calc(100vh - 78px); display: flex; flex-direction: column; }
+    .occ-right-scroll { flex: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+    .occ-right-foot { flex-shrink: 0; padding-top: 6px; }
     .occ-viewport { overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
@@ -133,7 +135,7 @@
     .occ-actions .btn { justify-content: center; font-size: 0.82rem; padding: 8px 10px; }
     .occ-action-row { display: flex; gap: 5px; }
     .occ-action-row .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 7px 6px; }
-    .occ-box-list { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; min-height: 0; }
+    .occ-box-list { display: flex; flex-direction: column; gap: 3px; }
     .occ-box-item { display: flex; align-items: center; gap: 6px; background: #111d2e; border: 1px solid #1e3045; border-radius: 5px; padding: 4px 7px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
     .occ-box-num { background: #ffeba2; color: #444; font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; min-width: 20px; text-align: center; flex-shrink: 0; }
@@ -249,26 +251,32 @@
         </div>
         <!-- Right: all controls (sticky) -->
         <div class="occ-right">
-          <div class="occ-zoom-bar">
-            <button class="zoom-btn" onclick="fitZoom()">Fit</button>
-            <button class="zoom-btn" onclick="zoomOut()">−</button>
-            <span id="zoom-label" class="zoom-label">100%</span>
-            <button class="zoom-btn" onclick="zoomIn()">+</button>
-          </div>
-          <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
-          <div class="occ-actions">
-            <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
-            <div class="occ-action-row">
-              <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
-              <button class="btn btn-ghost" onclick="resetOcclusionImage()">New Image</button>
+          <!-- scrollable section: zoom + controls + box list -->
+          <div class="occ-right-scroll">
+            <div class="occ-zoom-bar">
+              <button class="zoom-btn" onclick="fitZoom()">Fit</button>
+              <button class="zoom-btn" onclick="zoomOut()">−</button>
+              <span id="zoom-label" class="zoom-label">100%</span>
+              <button class="zoom-btn" onclick="zoomIn()">+</button>
+            </div>
+            <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
+            <div class="occ-actions">
+              <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
+              <div class="occ-action-row">
+                <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
+                <button class="btn btn-ghost" onclick="resetOcclusionImage()">New Image</button>
+              </div>
+            </div>
+            <div class="status" id="occ-status"></div>
+            <div class="occ-box-list" id="occ-box-list">
+              <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
             </div>
           </div>
-          <div class="status" id="occ-status"></div>
-          <div class="occ-box-list" id="occ-box-list">
-            <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
+          <!-- pinned footer: always visible -->
+          <div class="occ-right-foot">
+            <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="display:none;width:100%;justify-content:center;padding:11px">Add to Anki</button>
+            <div class="status" id="occ-add-status"></div>
           </div>
-          <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="display:none;width:100%;justify-content:center;padding:11px;flex-shrink:0">Add to Anki</button>
-          <div class="status" id="occ-add-status"></div>
         </div>
       </div>
     </div>
