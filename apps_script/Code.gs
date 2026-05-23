@@ -136,6 +136,12 @@ function handleAnalyzeImage(body) {
     raw = raw.trim();
   }
 
+  // Sanitize: replace literal newlines/tabs inside string values with a space.
+  // Multi-line label text in the image (e.g. "EXTENSOR CARPI\nRADIALIS LONGUS")
+  // can cause Claude to emit actual newline characters inside JSON strings,
+  // which produces an invalid-JSON parse error.
+  raw = raw.replace(/[\r\n\t]+/g, ' ').trim();
+
   let boxes;
   try { boxes = JSON.parse(raw); }
   catch (err) { return { error: 'Failed to parse Claude response: ' + err.message + '\n\nRaw: ' + raw.slice(0, 300) }; }
