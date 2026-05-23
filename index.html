@@ -120,9 +120,11 @@
     .zoom-btn { background: transparent; border: 1px solid #1e3045; color: #94a3b8; padding: 3px 11px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
     .zoom-btn:hover { background: #1e3045; color: #e2e8f0; }
     .zoom-label { color: #64748b; font-size: 0.8rem; min-width: 42px; text-align: center; }
-    .occ-hint-text { font-size: 0.75rem; color: #64748b; margin-top: 10px; margin-bottom: 10px; }
-    .occ-actions { display: flex; gap: 6px; margin-top: 2px; }
-    .occ-actions .btn { font-size: 0.8rem; padding: 7px 11px; }
+    .occ-hint-text { font-size: 0.73rem; color: #64748b; line-height: 1.45; }
+    .occ-actions { display: flex; flex-direction: column; gap: 5px; }
+    .occ-actions .btn { justify-content: center; font-size: 0.82rem; padding: 8px 10px; }
+    .occ-action-row { display: flex; gap: 5px; }
+    .occ-action-row .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 7px 6px; }
     .occ-box-list { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; min-height: 0; }
     .occ-box-item { display: flex; align-items: center; gap: 6px; background: #111d2e; border: 1px solid #1e3045; border-radius: 5px; padding: 4px 7px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
@@ -228,7 +230,7 @@
     <!-- Editor (shown after image loaded) -->
     <div id="occ-editor" style="display:none">
       <div class="occ-editor-layout">
-        <!-- Left: image + zoom + controls -->
+        <!-- Left: image + zoom only -->
         <div class="occ-left">
           <div class="occ-viewport" id="occ-viewport">
             <div class="occ-img-wrap" id="occ-img-wrap">
@@ -242,20 +244,22 @@
             <span id="zoom-label" class="zoom-label">100%</span>
             <button class="zoom-btn" onclick="zoomIn()">+</button>
           </div>
+        </div>
+        <!-- Right: all controls (sticky) -->
+        <div class="occ-right">
           <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
           <div class="occ-actions">
             <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
-            <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
-            <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
+            <div class="occ-action-row">
+              <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
+              <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
+            </div>
           </div>
           <div class="status" id="occ-status"></div>
-        </div>
-        <!-- Right: scrollable box list + Add to Anki (sticky) -->
-        <div class="occ-right">
           <div class="occ-box-list" id="occ-box-list">
             <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
           </div>
-          <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:11px;flex-shrink:0">Add to Anki</button>
+          <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="display:none;width:100%;justify-content:center;padding:11px;flex-shrink:0">Add to Anki</button>
           <div class="status" id="occ-add-status"></div>
         </div>
       </div>
@@ -668,6 +672,8 @@
 
   function renderBoxList() {
     const list = document.getElementById('occ-box-list');
+    const addBtn = document.getElementById('occ-add-btn');
+    if (addBtn) addBtn.style.display = oBoxes.length ? '' : 'none';
     if (!oBoxes.length) { list.innerHTML = '<div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>'; return; }
     list.innerHTML = oBoxes.map((b, i) =>
       `<div class="occ-box-item ${b.id === oSelected ? 'sel' : ''}" onclick="selectBox(${b.id})">
