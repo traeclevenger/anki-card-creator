@@ -111,15 +111,15 @@
     /* Image Occlusion editor */
     .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
     .occ-left { flex: 1; min-width: 0; }
-    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; max-height: calc(100vh - 90px); display: flex; flex-direction: column; gap: 8px; }
+    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; max-height: calc(100vh - 78px); display: flex; flex-direction: column; gap: 6px; }
     .occ-viewport { overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
     .occ-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
-    .occ-zoom-bar { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-    .zoom-btn { background: transparent; border: 1px solid #1e3045; color: #94a3b8; padding: 3px 11px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .occ-zoom-bar { display: flex; align-items: center; gap: 4px; background: #111d2e; border: 1px solid #1e3045; border-radius: 6px; padding: 4px 6px; }
+    .zoom-btn { background: transparent; border: 1px solid #1e3045; color: #94a3b8; padding: 2px 9px; border-radius: 5px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
     .zoom-btn:hover { background: #1e3045; color: #e2e8f0; }
-    .zoom-label { color: #64748b; font-size: 0.8rem; min-width: 42px; text-align: center; }
+    .zoom-label { color: #64748b; font-size: 0.78rem; min-width: 36px; text-align: center; }
     .occ-hint-text { font-size: 0.73rem; color: #64748b; line-height: 1.45; }
     .occ-actions { display: flex; flex-direction: column; gap: 5px; }
     .occ-actions .btn { justify-content: center; font-size: 0.82rem; padding: 8px 10px; }
@@ -230,7 +230,7 @@
     <!-- Editor (shown after image loaded) -->
     <div id="occ-editor" style="display:none">
       <div class="occ-editor-layout">
-        <!-- Left: image + zoom only -->
+        <!-- Left: image only -->
         <div class="occ-left">
           <div class="occ-viewport" id="occ-viewport">
             <div class="occ-img-wrap" id="occ-img-wrap">
@@ -238,21 +238,21 @@
               <svg id="occ-svg" class="occ-svg"></svg>
             </div>
           </div>
+        </div>
+        <!-- Right: all controls (sticky) -->
+        <div class="occ-right">
           <div class="occ-zoom-bar">
             <button class="zoom-btn" onclick="fitZoom()">Fit</button>
             <button class="zoom-btn" onclick="zoomOut()">−</button>
             <span id="zoom-label" class="zoom-label">100%</span>
             <button class="zoom-btn" onclick="zoomIn()">+</button>
           </div>
-        </div>
-        <!-- Right: all controls (sticky) -->
-        <div class="occ-right">
           <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
           <div class="occ-actions">
             <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
             <div class="occ-action-row">
               <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
-              <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
+              <button class="btn btn-ghost" onclick="resetOcclusionImage()">New Image</button>
             </div>
           </div>
           <div class="status" id="occ-status"></div>
