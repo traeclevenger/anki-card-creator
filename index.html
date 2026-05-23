@@ -822,12 +822,13 @@
       const notes = oBoxes.map((b, i) => {
         const xp = (b.x / oImgW * 100).toFixed(3), yp = (b.y / oImgH * 100).toFixed(3);
         const wp = (b.w / oImgW * 100).toFixed(3), hp = (b.h / oImgH * 100).toFixed(3);
+        const label = esc(b.label || String(i + 1));
         const front =
           `<div style="text-align:center"><div style="position:relative;display:inline-block;max-width:100%">` +
           `<img src="${oFilename}" style="width:100%;display:block;max-width:600px">` +
           `<div style="position:absolute;left:${xp}%;top:${yp}%;width:${wp}%;height:${hp}%;background:#ffeba2;border:2px solid #e08000;border-radius:4px;box-sizing:border-box"></div>` +
-          `</div></div>`;
-        const label = esc(b.label || String(i + 1));
+          `</div></div>` +
+          `<span style="display:none">${label}-${i+1}-${oFilename}</span>`;
         const back =
           `<div style="text-align:center"><img src="${oFilename}" style="max-width:100%;max-width:600px"><br><br>` +
           `<span style="font-size:1.15em;font-weight:bold">${label}</span></div>`;
