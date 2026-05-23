@@ -686,7 +686,7 @@
           handles += `<rect x="${hx-hs/2}" y="${hy-hs/2}" width="${hs}" height="${hs}" rx="2" fill="#3d97cc" stroke="white" stroke-width="1.5" style="cursor:${n}-resize" />`;
         });
       }
-      return `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="5" fill="#000000" fill-opacity="0.85" stroke="${stroke}" stroke-width="${sw}" />
+      return `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="5" fill="#000000" fill-opacity="0.5" stroke="${stroke}" stroke-width="${sw}" />
         <text x="${b.x+b.w/2}" y="${b.y+b.h/2}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="#333" pointer-events="none">${num}</text>
         ${handles}`;
     }).join('');
