@@ -5,53 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Anki Card Creator</title>
   <link rel="icon" type="image/png" href="favicon.png" />
-  <!-- mammoth.js for in-browser .docx parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0e1520;
-      color: #e2e8f0;
-      min-height: 100vh;
-      padding: 32px 16px;
+      background: #0e1520; color: #e2e8f0; min-height: 100vh; padding: 32px 16px;
     }
-
     .container { max-width: 900px; margin: 0 auto; }
-
     h1 { font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
     .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
 
-    .card {
-      background: #161e2a;
-      border: 1px solid #1e3045;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-
-    .card-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #7c88a8;
-      margin-bottom: 14px;
-    }
-
+    .card { background: #161e2a; border: 1px solid #1e3045; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .card-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7c88a8; margin-bottom: 14px; }
     label { display: block; font-size: 0.875rem; color: #94a3b8; margin-bottom: 6px; }
 
     select, textarea, input[type="number"], input[type="text"] {
-      width: 100%;
-      background: #0e1520;
-      border: 1px solid #1e3045;
-      border-radius: 8px;
-      color: #e2e8f0;
-      font-size: 0.9rem;
-      padding: 10px 12px;
-      outline: none;
-      transition: border-color 0.15s;
+      width: 100%; background: #0e1520; border: 1px solid #1e3045; border-radius: 8px;
+      color: #e2e8f0; font-size: 0.9rem; padding: 10px 12px; outline: none; transition: border-color 0.15s;
     }
     select:focus, textarea:focus, input:focus { border-color: #3d97cc; }
     textarea { resize: vertical; min-height: 160px; font-family: inherit; line-height: 1.6; }
@@ -60,9 +31,8 @@
     .row > * { flex: 1; }
 
     .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; border-radius: 8px; font-size: 0.9rem;
-      font-weight: 600; border: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
     }
     .btn:hover:not(:disabled) { opacity: 0.85; }
@@ -70,20 +40,13 @@
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-primary { background: #3d97cc; color: #fff; }
     .btn-success { background: #22c55e; color: #fff; }
-    .btn-ghost {
-      background: transparent; border: 1px solid #1e3045;
-      color: #94a3b8; padding: 6px 12px; font-size: 0.8rem;
-    }
-    .btn-danger {
-      background: transparent; border: none; color: #f87171;
-      font-size: 0.8rem; cursor: pointer; padding: 4px 8px; border-radius: 4px;
-    }
+    .btn-ghost { background: transparent; border: 1px solid #1e3045; color: #94a3b8; padding: 6px 12px; font-size: 0.8rem; }
+    .btn-danger { background: transparent; border: none; color: #f87171; font-size: 0.8rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
     .btn-danger:hover { background: #2d1e1e; }
 
     .upload-zone {
-      border: 2px dashed #1e3045; border-radius: 8px; padding: 20px;
-      text-align: center; cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
+      border: 2px dashed #1e3045; border-radius: 8px; padding: 20px; text-align: center;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
       color: #64748b; font-size: 0.875rem; margin-top: 10px;
     }
     .upload-zone:hover, .upload-zone.drag { border-color: #3d97cc; background: #112030; color: #82c8e8; }
@@ -91,61 +54,32 @@
     .file-name { font-size: 0.8rem; color: #3d97cc; margin-top: 6px; }
 
     .tabs { display: flex; gap: 4px; margin-bottom: 14px; }
-    .tab {
-      padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer;
-      color: #64748b; border: 1px solid transparent; background: transparent;
-    }
+    .tab { padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; color: #64748b; border: 1px solid transparent; background: transparent; }
     .tab.active { background: #1e3045; color: #e2e8f0; border-color: #1e3a55; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    .cards-header {
-      display: flex; align-items: center;
-      justify-content: space-between; margin-bottom: 14px;
-    }
-    .badge {
-      background: #1e3045; color: #82c8e8;
-      font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; font-weight: 600;
-    }
+    .cards-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .badge { background: #1e3045; color: #82c8e8; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
 
     .card-table { width: 100%; border-collapse: collapse; }
-    .card-table th {
-      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
-      color: #64748b; padding: 8px 10px; text-align: left; border-bottom: 1px solid #1e3045;
-    }
-    .card-table td {
-      padding: 8px 10px; border-bottom: 1px solid #111d2e;
-      vertical-align: top; font-size: 0.875rem;
-    }
+    .card-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; padding: 8px 10px; text-align: left; border-bottom: 1px solid #1e3045; }
+    .card-table td { padding: 8px 10px; border-bottom: 1px solid #111d2e; vertical-align: top; font-size: 0.875rem; }
     .card-table tr:last-child td { border-bottom: none; }
     .card-table tr:hover td { background: #111d2e; }
 
-    .editable {
-      background: transparent; border: 1px solid transparent; border-radius: 4px;
-      color: #e2e8f0; font-size: 0.875rem; padding: 4px 6px; width: 100%;
-      resize: none; font-family: inherit; line-height: 1.5; min-height: 36px;
-    }
+    .editable { background: transparent; border: 1px solid transparent; border-radius: 4px; color: #e2e8f0; font-size: 0.875rem; padding: 4px 6px; width: 100%; resize: none; font-family: inherit; line-height: 1.5; min-height: 36px; }
     .editable:focus { border-color: #2d5575; background: #0f1117; outline: none; }
 
     .tags-cell { display: flex; flex-wrap: wrap; gap: 4px; }
-    .tag-chip {
-      background: #122a3d; color: #82c8e8;
-      font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;
-    }
+    .tag-chip { background: #122a3d; color: #82c8e8; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px; }
 
-    .status {
-      padding: 10px 14px; border-radius: 8px; font-size: 0.875rem;
-      margin-top: 12px; display: none;
-    }
+    .status { padding: 10px 14px; border-radius: 8px; font-size: 0.875rem; margin-top: 12px; display: none; }
     .status.info    { background: #122a3d; color: #82c8e8; border: 1px solid #0e3050; display: block; }
     .status.error   { background: #2d1e1e; color: #fca5a5; border: 1px solid #4d2020; display: block; }
     .status.success { background: #1a2e1a; color: #86efac; border: 1px solid #1e4a1e; display: block; }
 
-    .spinner {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.7s linear infinite;
-    }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .actions { display: flex; gap: 10px; margin-top: 16px; }
@@ -155,18 +89,29 @@
     .new-deck-input.visible { display: block; }
 
     /* Card type toggle */
-    .type-toggle { display: flex; gap: 0; border: 1px solid #1e3045; border-radius: 8px; overflow: hidden; width: fit-content; }
-    .type-btn {
-      padding: 7px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-      background: transparent; border: none; color: #64748b; transition: background 0.15s, color 0.15s;
-    }
+    .type-toggle { display: flex; gap: 0; border: 1px solid #1e3045; border-radius: 8px; overflow: hidden; width: fit-content; flex-wrap: wrap; }
+    .type-btn { padding: 7px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: transparent; border: none; color: #64748b; transition: background 0.15s, color 0.15s; }
     .type-btn.active { background: #3d97cc; color: #fff; }
     .type-btn:not(.active):hover { background: #1e3045; color: #e2e8f0; }
 
-    /* Cloze syntax highlight in preview */
+    /* Cloze */
     .cloze-hint { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
     .cloze-hint code { background: #1e3045; color: #82c8e8; padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
     .cloze-token { color: #82c8e8; font-weight: 600; }
+
+    /* Image Occlusion editor */
+    .occ-img-wrap { position: relative; cursor: crosshair; user-select: none; background: #0a1018; border-radius: 8px; overflow: hidden; line-height: 0; }
+    .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
+    .occ-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .occ-toolbar { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    .occ-hint-text { font-size: 0.78rem; color: #64748b; margin-top: 8px; }
+    .occ-box-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+    .occ-box-item { display: flex; align-items: center; gap: 8px; background: #111d2e; border: 1px solid #1e3045; border-radius: 6px; padding: 7px 10px; cursor: pointer; transition: border-color 0.15s; }
+    .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
+    .occ-box-num { background: #ffeba2; color: #444; font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; min-width: 22px; text-align: center; flex-shrink: 0; }
+    .occ-box-label { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 0.875rem; outline: none; min-width: 0; }
+    .occ-box-label::placeholder { color: #4a5068; }
+    .occ-empty { color: #4a5068; font-size: 0.85rem; padding: 8px 0; }
   </style>
 </head>
 <body>
@@ -174,8 +119,8 @@
   <h1>Anki Card Creator</h1>
   <p class="subtitle">Powered by Claude AI + AnkiConnect</p>
 
-  <!-- Study Material -->
-  <div class="card">
+  <!-- Study Material (Basic / Cloze) -->
+  <div class="card" id="study-material-card">
     <div class="card-title">Study Material</div>
     <div class="tabs">
       <button class="tab active" onclick="switchTab('paste')">Paste Text</button>
@@ -194,6 +139,41 @@
     </div>
   </div>
 
+  <!-- Image Occlusion Editor -->
+  <div class="card" id="occlusion-card" style="display:none">
+    <div class="card-title">Image</div>
+
+    <!-- Upload zone (shown before image loaded) -->
+    <div id="occ-upload">
+      <div class="upload-zone" id="occ-drop-zone" onclick="document.getElementById('occ-file-input').click()">
+        <div>Drop an image here or click to browse</div>
+        <div style="font-size:0.8rem;margin-top:4px;color:#4a5068">.jpg, .png, .gif, .webp supported</div>
+        <input type="file" id="occ-file-input" accept="image/*" onchange="loadOcclusionImage(event)" />
+      </div>
+      <div class="file-name" id="occ-file-name"></div>
+    </div>
+
+    <!-- Editor (shown after image loaded) -->
+    <div id="occ-editor" style="display:none">
+      <div class="occ-img-wrap" id="occ-img-wrap">
+        <img id="occ-img" src="" alt="" />
+        <svg id="occ-svg" class="occ-svg"></svg>
+      </div>
+      <div class="occ-hint-text">Drag on the image to draw a box. Click a box to select — drag to move, drag corners to resize. Delete key removes selected box.</div>
+
+      <div class="occ-box-list" id="occ-box-list">
+        <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
+      </div>
+
+      <div class="occ-toolbar">
+        <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
+        <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
+        <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
+      </div>
+      <div class="status" id="occ-status"></div>
+    </div>
+  </div>
+
   <!-- Settings -->
   <div class="card">
     <div class="card-title">Settings</div>
@@ -201,8 +181,9 @@
       <div>
         <label>Card Type</label>
         <div class="type-toggle">
-          <button class="type-btn active" id="type-basic" onclick="setCardType('basic')">Basic (Q&amp;A)</button>
-          <button class="type-btn" id="type-cloze" onclick="setCardType('cloze')">Cloze (Fill-in-the-blank)</button>
+          <button class="type-btn active" id="type-basic"     onclick="setCardType('basic')">Basic (Q&amp;A)</button>
+          <button class="type-btn"        id="type-cloze"     onclick="setCardType('cloze')">Cloze (Fill-in-blank)</button>
+          <button class="type-btn"        id="type-occlusion" onclick="setCardType('occlusion')">Image Occlusion</button>
         </div>
         <div id="cloze-hint" class="cloze-hint" style="display:none">
           Claude will wrap key terms like <code>{{c1::answer}}</code> — you can edit these in the preview below.
@@ -219,32 +200,28 @@
           <input type="text" class="new-deck-input" id="new-deck-name" placeholder="New deck name" style="flex:1" />
         </div>
       </div>
-      <div>
+      <div id="card-count-wrap">
         <label>Card Count (optional)</label>
         <input type="number" id="card-count" placeholder="Auto (10–30)" min="1" max="100" />
       </div>
     </div>
   </div>
 
-  <!-- Generate -->
-  <div style="margin-bottom:20px">
+  <!-- Generate (hidden for occlusion) -->
+  <div id="generate-wrap" style="margin-bottom:20px">
     <button class="btn btn-primary" id="generate-btn" onclick="generateCards()" style="width:100%;justify-content:center;padding:14px">
       Generate Cards with Claude
     </button>
     <div class="status" id="generate-status"></div>
   </div>
 
-  <!-- Cards Preview -->
+  <!-- Cards Preview (Basic / Cloze) -->
   <div class="card" id="cards-section" style="display:none">
     <div class="cards-header">
-      <div class="card-title" style="margin-bottom:0">
-        Generated Cards <span class="badge" id="card-count-badge">0</span>
-      </div>
+      <div class="card-title" style="margin-bottom:0">Generated Cards <span class="badge" id="card-count-badge">0</span></div>
       <button class="btn btn-ghost" onclick="addBlankCard()">+ Add Card</button>
     </div>
-
     <div id="empty-state">No cards yet. Generate some above.</div>
-
     <table class="card-table" id="card-table" style="display:none">
       <thead id="card-thead">
         <tr>
@@ -256,274 +233,466 @@
       </thead>
       <tbody id="card-tbody"></tbody>
     </table>
-
     <div class="actions">
-      <button class="btn btn-success" id="add-btn" onclick="addToAnki()" style="flex:1;justify-content:center">
-        Add to Anki
-      </button>
+      <button class="btn btn-success" id="add-btn" onclick="addToAnki()" style="flex:1;justify-content:center">Add to Anki</button>
     </div>
     <div class="status" id="add-status"></div>
+  </div>
+
+  <!-- Occlusion Add to Anki -->
+  <div id="occ-add-wrap" style="display:none;margin-bottom:20px">
+    <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:14px">
+      Add to Anki
+    </button>
+    <div class="status" id="occ-add-status"></div>
   </div>
 </div>
 
 <script>
   // ── CONFIG ────────────────────────────────────────────────────────────────────
-  // Paste your deployed Apps Script /exec URL here after deploying Code.gs
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyoT2Vrx9DrUMdhJwe01ZaQKJ9U-O4IFl0rfAU7gZBMzQ12W0cu69MAePh7wTywfQe/exec';
   const ANKI_CONNECT_URL = 'http://localhost:8765';
 
-  // ── State ─────────────────────────────────────────────────────────────────────
+  // ── State: Basic / Cloze ──────────────────────────────────────────────────────
   let cards = [];
   let currentTab = 'paste';
-  let cardType = 'basic'; // 'basic' | 'cloze'
+  let cardType = 'basic';
+
+  // ── State: Image Occlusion ────────────────────────────────────────────────────
+  let oImgW = 0, oImgH = 0;    // natural image dimensions (SVG viewBox)
+  let oB64 = null;              // raw base64 (no data: prefix) for APIs
+  let oMediaType = 'image/jpeg';
+  let oFilename = null;
+  let oBoxes = [];              // [{id, x, y, w, h, label}] in natural px
+  let oNextId = 1;
+  let oSelected = null;         // selected box id
+  let oOp = null;               // current drag op: {type, ...}
 
   // ── Card type toggle ──────────────────────────────────────────────────────────
   function setCardType(type) {
     cardType = type;
-    document.getElementById('type-basic').classList.toggle('active', type === 'basic');
-    document.getElementById('type-cloze').classList.toggle('active', type === 'cloze');
-    document.getElementById('cloze-hint').style.display = type === 'cloze' ? 'block' : 'none';
-    if (cards.length) renderCards(); // re-render table headers if cards already showing
+    ['basic','cloze','occlusion'].forEach(t =>
+      document.getElementById('type-' + t).classList.toggle('active', t === type)
+    );
+    document.getElementById('cloze-hint').style.display        = type === 'cloze'     ? 'block' : 'none';
+    document.getElementById('study-material-card').style.display = type === 'occlusion' ? 'none'  : 'block';
+    document.getElementById('occlusion-card').style.display    = type === 'occlusion' ? 'block' : 'none';
+    document.getElementById('generate-wrap').style.display     = type === 'occlusion' ? 'none'  : 'block';
+    document.getElementById('cards-section').style.display     = type === 'occlusion' ? 'none'  : (cards.length ? 'block' : 'none');
+    document.getElementById('occ-add-wrap').style.display      = type === 'occlusion' ? 'block' : 'none';
+    document.getElementById('card-count-wrap').style.display   = type === 'occlusion' ? 'none'  : 'block';
+    if (type !== 'occlusion' && cards.length) renderCards();
   }
 
   // ── Tabs ──────────────────────────────────────────────────────────────────────
   function switchTab(tab) {
     currentTab = tab;
-    document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['paste','file'][i] === tab);
-    });
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['paste','file'][i] === tab));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
   }
 
-  // ── File upload (fully client-side) ──────────────────────────────────────────
+  // ── Text file upload ──────────────────────────────────────────────────────────
   const dropZone = document.getElementById('drop-zone');
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag');
-    if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
-  });
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]); });
 
-  function handleFile(event) {
-    if (event.target.files.length) processFile(event.target.files[0]);
-  }
+  function handleFile(e) { if (e.target.files.length) processFile(e.target.files[0]); }
 
   async function processFile(file) {
     document.getElementById('file-name').textContent = `Loading ${file.name}…`;
     try {
       let text;
-      const name = file.name.toLowerCase();
-      if (name.endsWith('.docx')) {
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
+      if (file.name.toLowerCase().endsWith('.docx')) {
+        const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
         text = result.value;
-      } else {
-        text = await file.text();
-      }
+      } else { text = await file.text(); }
       document.getElementById('content').value = text;
-      document.getElementById('file-name').textContent =
-        `✓ ${file.name} loaded (${text.length.toLocaleString()} chars)`;
+      document.getElementById('file-name').textContent = `✓ ${file.name} loaded (${text.length.toLocaleString()} chars)`;
       switchTab('paste');
-    } catch (err) {
-      document.getElementById('file-name').textContent = `Error: ${err.message}`;
-    }
+    } catch (err) { document.getElementById('file-name').textContent = `Error: ${err.message}`; }
   }
 
-  // ── Load decks from AnkiConnect ───────────────────────────────────────────────
+  // ── Decks ─────────────────────────────────────────────────────────────────────
   async function loadDecks() {
     try {
-      const res = await fetch(ANKI_CONNECT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'deckNames', version: 6 })
-      });
+      const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action: 'deckNames', version: 6 }) });
       const data = await res.json();
-      const decks = (data.result || []).sort();
       const sel = document.getElementById('deck-select');
-      sel.innerHTML = decks.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+      sel.innerHTML = (data.result || []).sort().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
       sel.insertAdjacentHTML('beforeend', '<option value="__new__">+ Create new deck…</option>');
-    } catch (_) {
-      document.getElementById('deck-select').innerHTML =
-        '<option value="">Anki not found — open Anki first</option>';
-    }
+    } catch (_) { document.getElementById('deck-select').innerHTML = '<option value="">Anki not found — open Anki first</option>'; }
   }
 
-  function onDeckChange() {
-    const sel = document.getElementById('deck-select');
-    document.getElementById('new-deck-name').classList.toggle('visible', sel.value === '__new__');
-  }
+  function onDeckChange() { document.getElementById('new-deck-name').classList.toggle('visible', document.getElementById('deck-select').value === '__new__'); }
 
   function selectedDeck() {
     const sel = document.getElementById('deck-select');
-    if (sel.value === '__new__') {
-      return document.getElementById('new-deck-name').value.trim() || null;
-    }
-    return sel.value || null;
+    return sel.value === '__new__' ? (document.getElementById('new-deck-name').value.trim() || null) : (sel.value || null);
   }
 
-  // ── Generate cards via Apps Script ────────────────────────────────────────────
+  // ── Generate (Basic / Cloze) ──────────────────────────────────────────────────
   async function generateCards() {
     const content = document.getElementById('content').value.trim();
     if (!content) { showStatus('generate-status', 'error', 'Please enter some study material first.'); return; }
-    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_YOUR')) {
-      showStatus('generate-status', 'error', 'Apps Script URL not configured — see setup instructions.'); return;
-    }
-
     const countVal = document.getElementById('card-count').value;
     const btn = document.getElementById('generate-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Generating…';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…';
     showStatus('generate-status', 'info', 'Asking Claude to generate cards…');
-
     try {
-      const res = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'generate',
-          content,
-          card_type: cardType,
-          card_count: countVal ? parseInt(countVal) : null
-        })
-      });
+      const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'generate', content, card_type: cardType, card_count: countVal ? parseInt(countVal) : null }) });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-
       cards = data.cards;
       renderCards();
-      showStatus('generate-status', 'success',
-        `${cards.length} ${cardType} card${cards.length !== 1 ? 's' : ''} generated. Review and edit below, then click "Add to Anki".`);
-    } catch (err) {
-      showStatus('generate-status', 'error', err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = 'Generate Cards with Claude';
-    }
+      showStatus('generate-status', 'success', `${cards.length} ${cardType} card${cards.length !== 1 ? 's' : ''} generated. Review and edit below, then click "Add to Anki".`);
+    } catch (err) { showStatus('generate-status', 'error', err.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Generate Cards with Claude'; }
   }
 
   // ── Render card table ─────────────────────────────────────────────────────────
   function renderCards() {
     const section = document.getElementById('cards-section');
-    const table   = document.getElementById('card-table');
-    const empty   = document.getElementById('empty-state');
-
+    const table = document.getElementById('card-table');
+    const empty = document.getElementById('empty-state');
     section.style.display = 'block';
     document.getElementById('card-count-badge').textContent = cards.length;
-
     if (!cards.length) { table.style.display = 'none'; empty.style.display = 'block'; return; }
-    empty.style.display = 'none';
-    table.style.display = 'table';
+    empty.style.display = 'none'; table.style.display = 'table';
 
-    // Update column headers based on card type
     document.getElementById('card-thead').innerHTML = cardType === 'cloze'
-      ? `<tr>
-          <th style="width:52%">Text <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#4a5068">(use {{c1::answer}} syntax)</span></th>
-          <th style="width:24%">Extra (optional)</th>
-          <th style="width:18%">Tags</th>
-          <th style="width:6%"></th>
-        </tr>`
-      : `<tr>
-          <th style="width:38%">Front</th>
-          <th style="width:38%">Back</th>
-          <th style="width:18%">Tags</th>
-          <th style="width:6%"></th>
-        </tr>`;
+      ? `<tr><th style="width:52%">Text <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#4a5068">(use {{c1::answer}} syntax)</span></th><th style="width:24%">Extra (optional)</th><th style="width:18%">Tags</th><th style="width:6%"></th></tr>`
+      : `<tr><th style="width:38%">Front</th><th style="width:38%">Back</th><th style="width:18%">Tags</th><th style="width:6%"></th></tr>`;
 
     document.getElementById('card-tbody').innerHTML = cards.map((c, i) => {
-      const tagsHtml = `
-        <div class="tags-cell">${(c.tags||[]).map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>
-        <input type="text" class="editable" style="margin-top:4px;font-size:0.75rem"
-          placeholder="tag1 tag2" value="${esc((c.tags||[]).join(' '))}"
-          oninput="updateCard(${i},'tags',this.value.split(' ').filter(Boolean))" />`;
-
-      if (cardType === 'cloze') {
-        return `
-          <tr id="row-${i}">
-            <td>
-              <textarea class="editable" rows="3" oninput="updateCard(${i},'text',this.value);renderClozePreview(${i},this.value)">${esc(c.text||'')}</textarea>
-              <div id="cloze-preview-${i}" style="font-size:0.78rem;margin-top:4px;color:#94a3b8;line-height:1.5">${renderClozeText(c.text||'')}</div>
-            </td>
-            <td><textarea class="editable" rows="3" oninput="updateCard(${i},'extra',this.value)">${esc(c.extra||'')}</textarea></td>
-            <td>${tagsHtml}</td>
-            <td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td>
-          </tr>`;
-      } else {
-        return `
-          <tr id="row-${i}">
-            <td><textarea class="editable" rows="2" oninput="updateCard(${i},'front',this.value)">${esc(c.front||'')}</textarea></td>
-            <td><textarea class="editable" rows="2" oninput="updateCard(${i},'back',this.value)">${esc(c.back||'')}</textarea></td>
-            <td>${tagsHtml}</td>
-            <td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td>
-          </tr>`;
-      }
+      const tagsHtml = `<div class="tags-cell">${(c.tags||[]).map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>
+        <input type="text" class="editable" style="margin-top:4px;font-size:0.75rem" placeholder="tag1 tag2" value="${esc((c.tags||[]).join(' '))}" oninput="updateCard(${i},'tags',this.value.split(' ').filter(Boolean))" />`;
+      return cardType === 'cloze'
+        ? `<tr><td><textarea class="editable" rows="3" oninput="updateCard(${i},'text',this.value);renderClozePreview(${i},this.value)">${esc(c.text||'')}</textarea><div id="cloze-preview-${i}" style="font-size:0.78rem;margin-top:4px;color:#94a3b8;line-height:1.5">${renderClozeText(c.text||'')}</div></td><td><textarea class="editable" rows="3" oninput="updateCard(${i},'extra',this.value)">${esc(c.extra||'')}</textarea></td><td>${tagsHtml}</td><td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td></tr>`
+        : `<tr><td><textarea class="editable" rows="2" oninput="updateCard(${i},'front',this.value)">${esc(c.front||'')}</textarea></td><td><textarea class="editable" rows="2" oninput="updateCard(${i},'back',this.value)">${esc(c.back||'')}</textarea></td><td>${tagsHtml}</td><td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td></tr>`;
     }).join('');
   }
 
-  // Render cloze text with {{c1::term}} highlighted
-  function renderClozeText(text) {
-    return esc(text).replace(/\{\{c(\d+)::([^}]+)\}\}/g,
-      (_, n, term) => `<span class="cloze-token">{{c${n}::<u>${esc(term)}</u>}}</span>`);
-  }
-  function renderClozePreview(i, value) {
-    const el = document.getElementById(`cloze-preview-${i}`);
-    if (el) el.innerHTML = renderClozeText(value);
-  }
-
-  function updateCard(i, field, value) { if (i < cards.length) cards[i][field] = value; }
+  function renderClozeText(text) { return esc(text).replace(/\{\{c(\d+)::([^}]+)\}\}/g, (_, n, term) => `<span class="cloze-token">{{c${n}::<u>${esc(term)}</u>}}</span>`); }
+  function renderClozePreview(i, v) { const el = document.getElementById(`cloze-preview-${i}`); if (el) el.innerHTML = renderClozeText(v); }
+  function updateCard(i, f, v) { if (i < cards.length) cards[i][f] = v; }
   function removeCard(i) { cards.splice(i, 1); renderCards(); }
   function addBlankCard() {
-    cards.push(cardType === 'cloze' ? { text: '', extra: '', tags: [] } : { front: '', back: '', tags: [] });
+    cards.push(cardType === 'cloze' ? {text:'',extra:'',tags:[]} : {front:'',back:'',tags:[]});
     renderCards();
     const rows = document.querySelectorAll('#card-tbody tr');
     if (rows.length) rows[rows.length-1].querySelector('textarea').focus();
   }
 
-  // ── Add to Anki via AnkiConnect ───────────────────────────────────────────────
+  // ── Add to Anki (Basic / Cloze) ───────────────────────────────────────────────
   async function addToAnki() {
     const deck = selectedDeck();
     if (!deck) { showStatus('add-status', 'error', 'Please select or enter a deck name.'); return; }
     if (!cards.length) { showStatus('add-status', 'error', 'No cards to add.'); return; }
-
     const btn = document.getElementById('add-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Adding to Anki…';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Adding to Anki…';
     showStatus('add-status', 'info', `Adding ${cards.length} cards to "${deck}"…`);
-
     try {
-      // Create deck if needed
       await ankiAction('createDeck', { deck });
-
       const notes = cards.map(c => ({
         deckName: deck,
         modelName: cardType === 'cloze' ? 'Cloze' : 'Basic',
-        fields: cardType === 'cloze'
-          ? { Text: c.text || '', Extra: c.extra || '' }
-          : { Front: c.front || '', Back: c.back || '' },
+        fields: cardType === 'cloze' ? { Text: c.text||'', Extra: c.extra||'' } : { Front: c.front||'', Back: c.back||'' },
         tags: c.tags || [],
         options: { allowDuplicate: false, duplicateScope: 'deck' }
       }));
-
       const result = await ankiAction('addNotes', { notes });
-      const results  = result.result || [];
-      const added  = results.filter(r => r !== null).length;
-      const dupes  = results.filter(r => r === null).length;
+      const results = result.result || [];
+      const added = results.filter(r => r !== null).length;
+      const dupes = results.filter(r => r === null).length;
+      showStatus('add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} skipped as duplicates)` : ''));
+    } catch (err) { showStatus('add-status', 'error', err.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Add to Anki'; }
+  }
 
-      const msg = `Done! Added ${added} card${added !== 1 ? 's' : ''} to "${deck}".`
-        + (dupes > 0 ? ` (${dupes} skipped as duplicates)` : '');
-      showStatus('add-status', 'success', msg);
-    } catch (err) {
-      showStatus('add-status', 'error', err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = 'Add to Anki';
+  // ── Image Occlusion: load image ───────────────────────────────────────────────
+  const occDropZone = document.getElementById('occ-drop-zone');
+  occDropZone.addEventListener('dragover', e => { e.preventDefault(); occDropZone.classList.add('drag'); });
+  occDropZone.addEventListener('dragleave', () => occDropZone.classList.remove('drag'));
+  occDropZone.addEventListener('drop', e => { e.preventDefault(); occDropZone.classList.remove('drag'); if (e.dataTransfer.files.length) processOcclusionFile(e.dataTransfer.files[0]); });
+
+  function loadOcclusionImage(e) { if (e.target.files.length) processOcclusionFile(e.target.files[0]); }
+
+  async function processOcclusionFile(file) {
+    document.getElementById('occ-file-name').textContent = `Loading ${file.name}…`;
+    try {
+      const { b64, w, h, mediaType, dataUrl } = await resizeForUpload(file);
+      oB64 = b64; oImgW = w; oImgH = h; oMediaType = mediaType;
+      oFilename = 'anki-occ-' + Date.now() + '.jpg';
+      oBoxes = []; oNextId = 1; oSelected = null;
+
+      const img = document.getElementById('occ-img');
+      img.src = dataUrl;
+      img.onload = () => {
+        document.getElementById('occ-svg').setAttribute('viewBox', `0 0 ${oImgW} ${oImgH}`);
+        initSVGEditor();
+        document.getElementById('occ-upload').style.display = 'none';
+        document.getElementById('occ-editor').style.display = 'block';
+        renderOcclusion();
+      };
+      document.getElementById('occ-file-name').textContent = `✓ ${file.name} (${w}×${h})`;
+    } catch (err) { document.getElementById('occ-file-name').textContent = `Error: ${err.message}`; }
+  }
+
+  function resetOcclusionImage() {
+    document.getElementById('occ-upload').style.display = 'block';
+    document.getElementById('occ-editor').style.display = 'none';
+    document.getElementById('occ-file-input').value = '';
+    document.getElementById('occ-file-name').textContent = '';
+    oB64 = null; oBoxes = []; oSelected = null; oOp = null;
+    showStatus('occ-status', 'info', ''); document.getElementById('occ-status').style.display = 'none';
+  }
+
+  async function resizeForUpload(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 1200;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result;
+            resolve({ b64: dataUrl.split(',')[1], w, h, mediaType: 'image/jpeg', dataUrl });
+          };
+          reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.88);
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = url;
+    });
+  }
+
+  // ── Image Occlusion: SVG editor ───────────────────────────────────────────────
+  function initSVGEditor() {
+    const svg = document.getElementById('occ-svg');
+    svg.onmousedown  = onSVGDown;
+    svg.onmousemove  = onSVGMove;
+    svg.onmouseup    = onSVGUp;
+    svg.onmouseleave = onSVGUp;
+    document.addEventListener('keydown', e => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && oSelected !== null && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        oBoxes = oBoxes.filter(b => b.id !== oSelected);
+        oSelected = null; renderOcclusion();
+      }
+    });
+  }
+
+  function svgCoords(e) {
+    const svg = document.getElementById('occ-svg');
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  function handleSize() { return Math.min(oImgW, oImgH) * 0.025; }
+
+  function hitHandle(x, y, box) {
+    const hs = handleSize();
+    const pts = { nw:[box.x,box.y], ne:[box.x+box.w,box.y], sw:[box.x,box.y+box.h], se:[box.x+box.w,box.y+box.h] };
+    for (const [name,[hx,hy]] of Object.entries(pts)) {
+      if (Math.abs(x-hx) < hs && Math.abs(y-hy) < hs) return name;
+    }
+    return null;
+  }
+
+  function hitBox(x, y) {
+    for (let i = oBoxes.length - 1; i >= 0; i--) {
+      const b = oBoxes[i];
+      if (x >= b.x && x <= b.x+b.w && y >= b.y && y <= b.y+b.h) return b.id;
+    }
+    return null;
+  }
+
+  function onSVGDown(e) {
+    e.preventDefault();
+    const c = svgCoords(e);
+    const selBox = oBoxes.find(b => b.id === oSelected);
+
+    if (selBox) {
+      const h = hitHandle(c.x, c.y, selBox);
+      if (h) { oOp = { type:'resize', handle:h, origBox:{...selBox}, sx:c.x, sy:c.y }; return; }
+      if (c.x >= selBox.x && c.x <= selBox.x+selBox.w && c.y >= selBox.y && c.y <= selBox.y+selBox.h) {
+        oOp = { type:'move', id:selBox.id, sx:c.x, sy:c.y, ox:selBox.x, oy:selBox.y }; return;
+      }
+    }
+    const hid = hitBox(c.x, c.y);
+    if (hid !== null) {
+      oSelected = hid;
+      const b = oBoxes.find(b => b.id === hid);
+      oOp = { type:'move', id:hid, sx:c.x, sy:c.y, ox:b.x, oy:b.y };
+      renderOcclusion(); return;
+    }
+    oSelected = null;
+    oOp = { type:'draw', sx:c.x, sy:c.y };
+    renderOcclusion();
+  }
+
+  function onSVGMove(e) {
+    if (!oOp) return;
+    const c = svgCoords(e);
+    if (oOp.type === 'draw') {
+      renderOcclusion(c);
+    } else if (oOp.type === 'move') {
+      const b = oBoxes.find(b => b.id === oOp.id);
+      if (b) { b.x = Math.max(0, Math.min(oImgW - b.w, oOp.ox + (c.x - oOp.sx))); b.y = Math.max(0, Math.min(oImgH - b.h, oOp.oy + (c.y - oOp.sy))); renderOcclusion(); }
+    } else if (oOp.type === 'resize') {
+      applyResize(c); renderOcclusion();
     }
   }
 
+  function onSVGUp(e) {
+    if (!oOp) return;
+    if (oOp.type === 'draw') {
+      const c = svgCoords(e);
+      const x = Math.min(oOp.sx, c.x), y = Math.min(oOp.sy, c.y);
+      const w = Math.abs(c.x - oOp.sx), h = Math.abs(c.y - oOp.sy);
+      if (w > 10 && h > 10) {
+        const box = { id: oNextId++, x, y, w, h, label: '' };
+        oBoxes.push(box); oSelected = box.id;
+        setTimeout(() => { const inp = document.querySelector(`.occ-box-label[data-id="${box.id}"]`); if (inp) inp.focus(); }, 50);
+      }
+    }
+    oOp = null; renderOcclusion();
+  }
+
+  function applyResize(c) {
+    const b = oBoxes.find(b => b.id === oSelected);
+    if (!b) return;
+    const o = oOp.origBox;
+    const dx = c.x - oOp.sx, dy = c.y - oOp.sy;
+    const MIN = 20;
+    if (oOp.handle === 'nw') { b.x = o.x+dx; b.y = o.y+dy; b.w = Math.max(MIN, o.w-dx); b.h = Math.max(MIN, o.h-dy); }
+    if (oOp.handle === 'ne') { b.y = o.y+dy; b.w = Math.max(MIN, o.w+dx); b.h = Math.max(MIN, o.h-dy); }
+    if (oOp.handle === 'sw') { b.x = o.x+dx; b.w = Math.max(MIN, o.w-dx); b.h = Math.max(MIN, o.h+dy); }
+    if (oOp.handle === 'se') { b.w = Math.max(MIN, o.w+dx); b.h = Math.max(MIN, o.h+dy); }
+  }
+
+  // ── Image Occlusion: render ───────────────────────────────────────────────────
+  function renderOcclusion(drawCursor) {
+    const svg = document.getElementById('occ-svg');
+    if (!svg) return;
+    const hs = handleSize();
+
+    let out = oBoxes.map((b, i) => {
+      const sel = b.id === oSelected;
+      const stroke = sel ? '#3d97cc' : '#e08000';
+      const sw = sel ? 3 : 2;
+      const num = i + 1;
+      const fs = Math.max(Math.min(b.w, b.h) * 0.35, oImgW * 0.015);
+      let handles = '';
+      if (sel) {
+        [[b.x,b.y,'nw'],[b.x+b.w,b.y,'ne'],[b.x,b.y+b.h,'sw'],[b.x+b.w,b.y+b.h,'se']].forEach(([hx,hy,n]) => {
+          handles += `<rect x="${hx-hs/2}" y="${hy-hs/2}" width="${hs}" height="${hs}" rx="2" fill="#3d97cc" stroke="white" stroke-width="1.5" style="cursor:${n}-resize" />`;
+        });
+      }
+      return `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="5" fill="#ffeba2" fill-opacity="0.82" stroke="${stroke}" stroke-width="${sw}" />
+        <text x="${b.x+b.w/2}" y="${b.y+b.h/2}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="#333" pointer-events="none">${num}</text>
+        ${handles}`;
+    }).join('');
+
+    // Draw-in-progress preview
+    if (drawCursor && oOp && oOp.type === 'draw') {
+      const x = Math.min(oOp.sx, drawCursor.x), y = Math.min(oOp.sy, drawCursor.y);
+      const w = Math.abs(drawCursor.x - oOp.sx), h = Math.abs(drawCursor.y - oOp.sy);
+      out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#ffeba2" fill-opacity="0.5" stroke="#3d97cc" stroke-width="2" stroke-dasharray="8 4" />`;
+    }
+
+    svg.innerHTML = out;
+    renderBoxList();
+  }
+
+  function renderBoxList() {
+    const list = document.getElementById('occ-box-list');
+    if (!oBoxes.length) { list.innerHTML = '<div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>'; return; }
+    list.innerHTML = oBoxes.map((b, i) =>
+      `<div class="occ-box-item ${b.id === oSelected ? 'sel' : ''}" onclick="selectBox(${b.id})">
+        <span class="occ-box-num">${i+1}</span>
+        <input class="occ-box-label" data-id="${b.id}" type="text" placeholder="Label for box ${i+1}" value="${esc(b.label)}" oninput="updateBoxLabel(${b.id},this.value)" onclick="event.stopPropagation()" />
+        <button class="btn-danger" onclick="removeBox(${b.id});event.stopPropagation()">✕</button>
+      </div>`
+    ).join('');
+  }
+
+  function selectBox(id) { oSelected = id; renderOcclusion(); }
+  function updateBoxLabel(id, val) { const b = oBoxes.find(b => b.id === id); if (b) b.label = val; }
+  function removeBox(id) { oBoxes = oBoxes.filter(b => b.id !== id); if (oSelected === id) oSelected = null; renderOcclusion(); }
+  function clearAllBoxes() { oBoxes = []; oSelected = null; renderOcclusion(); }
+
+  // ── Image Occlusion: analyze with Claude ──────────────────────────────────────
+  async function analyzeImage() {
+    if (!oB64) { showStatus('occ-status', 'error', 'Please upload an image first.'); return; }
+    const btn = document.getElementById('analyze-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Analyzing…';
+    showStatus('occ-status', 'info', 'Claude is analyzing your image…');
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'analyzeImage', image_data: oB64, media_type: oMediaType, image_width: oImgW, image_height: oImgH }) });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      oBoxes = data.boxes.map(b => ({ id: oNextId++, x: b.x_pct / 100 * oImgW, y: b.y_pct / 100 * oImgH, w: b.w_pct / 100 * oImgW, h: b.h_pct / 100 * oImgH, label: b.label }));
+      oSelected = null;
+      renderOcclusion();
+      showStatus('occ-status', 'success', `${oBoxes.length} elements identified. Edit labels or reposition boxes as needed, then click "Add to Anki".`);
+    } catch (err) { showStatus('occ-status', 'error', err.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Analyze with Claude'; }
+  }
+
+  // ── Image Occlusion: add to Anki ─────────────────────────────────────────────
+  async function addOcclusionToAnki() {
+    const deck = selectedDeck();
+    if (!deck) { showStatus('occ-add-status', 'error', 'Please select or enter a deck name.'); return; }
+    if (!oB64) { showStatus('occ-add-status', 'error', 'Please upload an image first.'); return; }
+    if (!oBoxes.length) { showStatus('occ-add-status', 'error', 'Draw at least one occlusion box before adding.'); return; }
+
+    const btn = document.getElementById('occ-add-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Adding to Anki…';
+    showStatus('occ-add-status', 'info', 'Storing image in Anki media…');
+
+    try {
+      await ankiAction('storeMediaFile', { filename: oFilename, data: oB64 });
+      await ankiAction('createDeck', { deck });
+      showStatus('occ-add-status', 'info', `Adding ${oBoxes.length} cards to "${deck}"…`);
+
+      const notes = oBoxes.map((b, i) => {
+        const xp = (b.x / oImgW * 100).toFixed(3), yp = (b.y / oImgH * 100).toFixed(3);
+        const wp = (b.w / oImgW * 100).toFixed(3), hp = (b.h / oImgH * 100).toFixed(3);
+        const front =
+          `<div style="text-align:center"><div style="position:relative;display:inline-block;max-width:100%">` +
+          `<img src="${oFilename}" style="width:100%;display:block;max-width:600px">` +
+          `<div style="position:absolute;left:${xp}%;top:${yp}%;width:${wp}%;height:${hp}%;background:#ffeba2;border:2px solid #e08000;border-radius:4px;box-sizing:border-box"></div>` +
+          `</div></div>`;
+        const label = esc(b.label || String(i + 1));
+        const back =
+          `<div style="text-align:center"><img src="${oFilename}" style="max-width:100%;max-width:600px"><br><br>` +
+          `<span style="font-size:1.15em;font-weight:bold">${label}</span></div>`;
+        return { deckName: deck, modelName: 'Basic', fields: { Front: front, Back: back }, tags: ['image-occlusion'], options: { allowDuplicate: false, duplicateScope: 'deck' } };
+      });
+
+      const result = await ankiAction('addNotes', { notes });
+      const results = result.result || [];
+      const added = results.filter(r => r !== null).length;
+      const dupes = results.filter(r => r === null).length;
+      showStatus('occ-add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} skipped as duplicates)` : ''));
+    } catch (err) { showStatus('occ-add-status', 'error', err.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Add to Anki'; }
+  }
+
+  // ── AnkiConnect helper ────────────────────────────────────────────────────────
   async function ankiAction(action, params) {
-    const res = await fetch(ANKI_CONNECT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action, version: 6, params })
-    });
+    const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action, version: 6, params }) });
     const data = await res.json();
     if (data.error) throw new Error(`AnkiConnect: ${data.error}`);
     return data;
@@ -532,15 +701,10 @@
   // ── Helpers ───────────────────────────────────────────────────────────────────
   function showStatus(id, type, msg) {
     const el = document.getElementById(id);
-    el.className = `status ${type}`;
-    el.textContent = msg;
+    if (!el) return;
+    el.className = `status ${type}`; el.textContent = msg;
   }
-
-  function esc(str) {
-    return String(str ?? '')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   // Init
   loadDecks();
