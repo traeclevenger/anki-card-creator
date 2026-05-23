@@ -849,20 +849,28 @@
     return data;
   }
 
-  // addNotes returns per-note nulls for duplicates; data.error may be a non-fatal
-  // array of per-note messages — don't throw, just count outcomes from data.result.
+  // addNotes: nulls in data.result = duplicates/failures (non-fatal).
+  // Some AnkiConnect versions return data.error as a stringified Python list
+  // of per-note duplicate messages with data.result = null — treat as all-dupes.
   async function ankiAddNotes(notes) {
     const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action: 'addNotes', version: 6, params: { notes } }) });
     const data = await res.json();
-    // A top-level string error means the action itself failed (e.g. deck missing)
-    if (data.error && !Array.isArray(data.error) && typeof data.error === 'string' && !data.result) {
+    // Best case: result array present — nulls are dupes/failures.
+    if (Array.isArray(data.result)) {
+      return {
+        added: data.result.filter(r => r !== null).length,
+        dupes: data.result.filter(r => r === null).length,
+      };
+    }
+    // Fallback: error string from AnkiConnect (may be Python-style list).
+    if (data.error) {
+      const errStr = String(data.error);
+      // Per-note duplicate messages are non-fatal — report as all-dupes.
+      if (errStr.includes('duplicate')) return { added: 0, dupes: notes.length };
+      // Any other error (missing deck, model, etc.) is fatal.
       throw new Error(`AnkiConnect: ${data.error}`);
     }
-    const results = Array.isArray(data.result) ? data.result : [];
-    return {
-      added: results.filter(r => r !== null).length,
-      dupes:  results.filter(r => r === null).length,
-    };
+    return { added: 0, dupes: 0 };
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
