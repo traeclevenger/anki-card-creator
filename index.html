@@ -107,7 +107,7 @@
     /* Image Occlusion editor */
     .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
     .occ-left { flex: 1; min-width: 0; }
-    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow-y: auto; }
+    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; max-height: calc(100vh - 90px); display: flex; flex-direction: column; gap: 8px; }
     .occ-viewport { overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
@@ -117,8 +117,9 @@
     .zoom-btn:hover { background: #1e3045; color: #e2e8f0; }
     .zoom-label { color: #64748b; font-size: 0.8rem; min-width: 42px; text-align: center; }
     .occ-hint-text { font-size: 0.75rem; color: #64748b; margin-top: 10px; margin-bottom: 10px; }
-    .occ-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-    .occ-box-list { display: flex; flex-direction: column; gap: 3px; }
+    .occ-actions { display: flex; gap: 6px; margin-top: 2px; }
+    .occ-actions .btn { font-size: 0.8rem; padding: 7px 11px; }
+    .occ-box-list { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; min-height: 0; }
     .occ-box-item { display: flex; align-items: center; gap: 6px; background: #111d2e; border: 1px solid #1e3045; border-radius: 5px; padding: 4px 7px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
     .occ-box-num { background: #ffeba2; color: #444; font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; min-width: 20px; text-align: center; flex-shrink: 0; }
@@ -133,7 +134,7 @@
     .main-col { flex: 1; min-width: 0; }
     @media (max-width: 800px) {
       .occ-editor-layout { flex-direction: column; }
-      .occ-right { width: 100%; position: static; max-height: none; }
+      .occ-right { width: 100%; position: static; max-height: 50vh; }
     }
     @media (max-width: 520px) {
       .layout { flex-direction: column; }
@@ -235,14 +236,14 @@
             <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
           </div>
           <div class="status" id="occ-status"></div>
-          <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:12px;margin-top:12px">Add to Anki</button>
-          <div class="status" id="occ-add-status"></div>
         </div>
-        <!-- Right: scrollable box list (sticky) -->
+        <!-- Right: scrollable box list + Add to Anki (sticky) -->
         <div class="occ-right">
           <div class="occ-box-list" id="occ-box-list">
             <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
           </div>
+          <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:11px;flex-shrink:0">Add to Anki</button>
+          <div class="status" id="occ-add-status"></div>
         </div>
       </div>
     </div>
