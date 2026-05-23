@@ -119,7 +119,7 @@
     /* Image Occlusion editor */
     .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
     .occ-left { flex: 1; min-width: 0; }
-    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; height: calc(100vh - 78px); display: flex; flex-direction: column; overflow: hidden; }
+    .occ-right { width: 190px; flex-shrink: 0; position: sticky; top: 72px; display: flex; flex-direction: column; overflow: hidden; }
     .occ-right-top { flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid #1e3045; margin-bottom: 6px; }
     .occ-box-list { flex: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 3px; }
     .occ-right-foot { flex-shrink: 0; padding-top: 6px; }
@@ -250,7 +250,7 @@
           </div>
         </div>
         <!-- Right: all controls (sticky) -->
-        <div class="occ-right">
+        <div class="occ-right" id="occ-right-panel">
           <!-- pinned top: zoom + instructions + action buttons -->
           <div class="occ-right-top">
             <div class="occ-zoom-bar">
@@ -524,7 +524,7 @@
         initSVGEditor();
         document.getElementById('occ-upload').style.display = 'none';
         document.getElementById('occ-editor').style.display = 'block';
-        setTimeout(() => { initZoom(); renderOcclusion(); }, 0);
+        setTimeout(() => { initZoom(); renderOcclusion(); sizeOccRight(); }, 0);
       };
       document.getElementById('occ-file-name').textContent = `✓ ${file.name} (${w}×${h})`;
     } catch (err) { document.getElementById('occ-file-name').textContent = `Error: ${err.message}`; }
@@ -865,6 +865,15 @@
     }
   }
   function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Size occlusion right panel to fit viewport ───────────────────────────────
+  function sizeOccRight() {
+    const el = document.getElementById('occ-right-panel');
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    el.style.height = Math.max(200, window.innerHeight - top - 8) + 'px';
+  }
+  window.addEventListener('resize', sizeOccRight);
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────────
   document.addEventListener('keydown', e => {
