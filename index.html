@@ -152,6 +152,20 @@
 
     .new-deck-input { display: none; }
     .new-deck-input.visible { display: block; }
+
+    /* Card type toggle */
+    .type-toggle { display: flex; gap: 0; border: 1px solid #2d3148; border-radius: 8px; overflow: hidden; width: fit-content; }
+    .type-btn {
+      padding: 7px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      background: transparent; border: none; color: #64748b; transition: background 0.15s, color 0.15s;
+    }
+    .type-btn.active { background: #6366f1; color: #fff; }
+    .type-btn:not(.active):hover { background: #2d3148; color: #e2e8f0; }
+
+    /* Cloze syntax highlight in preview */
+    .cloze-hint { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
+    .cloze-hint code { background: #2d3148; color: #a5b4fc; padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
+    .cloze-token { color: #a5b4fc; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -182,6 +196,18 @@
   <!-- Settings -->
   <div class="card">
     <div class="card-title">Settings</div>
+    <div class="row" style="margin-bottom:18px">
+      <div>
+        <label>Card Type</label>
+        <div class="type-toggle">
+          <button class="type-btn active" id="type-basic" onclick="setCardType('basic')">Basic (Q&amp;A)</button>
+          <button class="type-btn" id="type-cloze" onclick="setCardType('cloze')">Cloze (Fill-in-the-blank)</button>
+        </div>
+        <div id="cloze-hint" class="cloze-hint" style="display:none">
+          Claude will wrap key terms like <code>{{c1::answer}}</code> — you can edit these in the preview below.
+        </div>
+      </div>
+    </div>
     <div class="row">
       <div>
         <label>Target Deck</label>
@@ -219,7 +245,7 @@
     <div id="empty-state">No cards yet. Generate some above.</div>
 
     <table class="card-table" id="card-table" style="display:none">
-      <thead>
+      <thead id="card-thead">
         <tr>
           <th style="width:38%">Front</th>
           <th style="width:38%">Back</th>
@@ -248,6 +274,16 @@
   // ── State ─────────────────────────────────────────────────────────────────────
   let cards = [];
   let currentTab = 'paste';
+  let cardType = 'basic'; // 'basic' | 'cloze'
+
+  // ── Card type toggle ──────────────────────────────────────────────────────────
+  function setCardType(type) {
+    cardType = type;
+    document.getElementById('type-basic').classList.toggle('active', type === 'basic');
+    document.getElementById('type-cloze').classList.toggle('active', type === 'cloze');
+    document.getElementById('cloze-hint').style.display = type === 'cloze' ? 'block' : 'none';
+    if (cards.length) renderCards(); // re-render table headers if cards already showing
+  }
 
   // ── Tabs ──────────────────────────────────────────────────────────────────────
   function switchTab(tab) {
@@ -345,6 +381,7 @@
         body: JSON.stringify({
           action: 'generate',
           content,
+          card_type: cardType,
           card_count: countVal ? parseInt(countVal) : null
         })
       });
@@ -354,7 +391,7 @@
       cards = data.cards;
       renderCards();
       showStatus('generate-status', 'success',
-        `${cards.length} cards generated. Review and edit below, then click "Add to Anki".`);
+        `${cards.length} ${cardType} card${cards.length !== 1 ? 's' : ''} generated. Review and edit below, then click "Add to Anki".`);
     } catch (err) {
       showStatus('generate-status', 'error', err.message);
     } finally {
@@ -376,25 +413,65 @@
     empty.style.display = 'none';
     table.style.display = 'table';
 
-    document.getElementById('card-tbody').innerHTML = cards.map((c, i) => `
-      <tr id="row-${i}">
-        <td><textarea class="editable" rows="2" oninput="updateCard(${i},'front',this.value)">${esc(c.front)}</textarea></td>
-        <td><textarea class="editable" rows="2" oninput="updateCard(${i},'back',this.value)">${esc(c.back)}</textarea></td>
-        <td>
-          <div class="tags-cell">${(c.tags||[]).map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>
-          <input type="text" class="editable" style="margin-top:4px;font-size:0.75rem"
-            placeholder="tag1 tag2" value="${esc((c.tags||[]).join(' '))}"
-            oninput="updateCard(${i},'tags',this.value.split(' ').filter(Boolean))" />
-        </td>
-        <td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td>
-      </tr>
-    `).join('');
+    // Update column headers based on card type
+    document.getElementById('card-thead').innerHTML = cardType === 'cloze'
+      ? `<tr>
+          <th style="width:52%">Text <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#4a5068">(use {{c1::answer}} syntax)</span></th>
+          <th style="width:24%">Extra (optional)</th>
+          <th style="width:18%">Tags</th>
+          <th style="width:6%"></th>
+        </tr>`
+      : `<tr>
+          <th style="width:38%">Front</th>
+          <th style="width:38%">Back</th>
+          <th style="width:18%">Tags</th>
+          <th style="width:6%"></th>
+        </tr>`;
+
+    document.getElementById('card-tbody').innerHTML = cards.map((c, i) => {
+      const tagsHtml = `
+        <div class="tags-cell">${(c.tags||[]).map(t=>`<span class="tag-chip">${esc(t)}</span>`).join('')}</div>
+        <input type="text" class="editable" style="margin-top:4px;font-size:0.75rem"
+          placeholder="tag1 tag2" value="${esc((c.tags||[]).join(' '))}"
+          oninput="updateCard(${i},'tags',this.value.split(' ').filter(Boolean))" />`;
+
+      if (cardType === 'cloze') {
+        return `
+          <tr id="row-${i}">
+            <td>
+              <textarea class="editable" rows="3" oninput="updateCard(${i},'text',this.value);renderClozePreview(${i},this.value)">${esc(c.text||'')}</textarea>
+              <div id="cloze-preview-${i}" style="font-size:0.78rem;margin-top:4px;color:#94a3b8;line-height:1.5">${renderClozeText(c.text||'')}</div>
+            </td>
+            <td><textarea class="editable" rows="3" oninput="updateCard(${i},'extra',this.value)">${esc(c.extra||'')}</textarea></td>
+            <td>${tagsHtml}</td>
+            <td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td>
+          </tr>`;
+      } else {
+        return `
+          <tr id="row-${i}">
+            <td><textarea class="editable" rows="2" oninput="updateCard(${i},'front',this.value)">${esc(c.front||'')}</textarea></td>
+            <td><textarea class="editable" rows="2" oninput="updateCard(${i},'back',this.value)">${esc(c.back||'')}</textarea></td>
+            <td>${tagsHtml}</td>
+            <td><button class="btn-danger" onclick="removeCard(${i})">✕</button></td>
+          </tr>`;
+      }
+    }).join('');
+  }
+
+  // Render cloze text with {{c1::term}} highlighted
+  function renderClozeText(text) {
+    return esc(text).replace(/\{\{c(\d+)::([^}]+)\}\}/g,
+      (_, n, term) => `<span class="cloze-token">{{c${n}::<u>${esc(term)}</u>}}</span>`);
+  }
+  function renderClozePreview(i, value) {
+    const el = document.getElementById(`cloze-preview-${i}`);
+    if (el) el.innerHTML = renderClozeText(value);
   }
 
   function updateCard(i, field, value) { if (i < cards.length) cards[i][field] = value; }
   function removeCard(i) { cards.splice(i, 1); renderCards(); }
   function addBlankCard() {
-    cards.push({ front: '', back: '', tags: [] });
+    cards.push(cardType === 'cloze' ? { text: '', extra: '', tags: [] } : { front: '', back: '', tags: [] });
     renderCards();
     const rows = document.querySelectorAll('#card-tbody tr');
     if (rows.length) rows[rows.length-1].querySelector('textarea').focus();
@@ -417,8 +494,10 @@
 
       const notes = cards.map(c => ({
         deckName: deck,
-        modelName: 'Basic',
-        fields: { Front: c.front, Back: c.back },
+        modelName: cardType === 'cloze' ? 'Cloze' : 'Basic',
+        fields: cardType === 'cloze'
+          ? { Text: c.text || '', Extra: c.extra || '' }
+          : { Front: c.front || '', Back: c.back || '' },
         tags: c.tags || [],
         options: { allowDuplicate: false, duplicateScope: 'deck' }
       }));

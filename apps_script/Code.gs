@@ -36,6 +36,7 @@ function handleGenerate(body) {
   const content = String(body.content || '').trim();
   if (!content) return { error: 'No content provided.' };
 
+  const cardType = body.card_type === 'cloze' ? 'cloze' : 'basic';
   const cardCount = body.card_count ? parseInt(body.card_count) : null;
   const countHint = cardCount
     ? 'Generate approximately ' + cardCount + ' cards.'
@@ -45,17 +46,9 @@ function handleGenerate(body) {
     'You are an expert at creating Anki flashcards following spaced repetition best practices. ' +
     'You always respond with valid JSON arrays only — no prose, no markdown fences.';
 
-  const userPrompt =
-    'Convert the following study material into Anki flashcards. ' + countHint + '\n\n' +
-    'Rules:\n' +
-    '- Each card tests ONE atomic concept\n' +
-    '- Fronts are concise, specific questions\n' +
-    '- Backs are accurate answers (no filler text)\n' +
-    '- Use plain language; avoid jargon unless the material requires it\n' +
-    '- Tags: 1–3 lowercase topic keywords, hyphens for spaces (e.g. "machine-learning")\n\n' +
-    'Return ONLY a JSON array:\n' +
-    '[{"front": "...", "back": "...", "tags": ["tag1"]}, ...]\n\n' +
-    'Study material:\n' + content;
+  const userPrompt = cardType === 'cloze'
+    ? buildClozePrompt(content, countHint)
+    : buildBasicPrompt(content, countHint);
 
   const response = callClaude({
     model: MODEL,
@@ -84,6 +77,42 @@ function handleGenerate(body) {
   if (!Array.isArray(cards)) return { error: 'Claude returned JSON but not an array.' };
 
   return { cards: cards };
+}
+
+// ── Prompt builders ───────────────────────────────────────────────────────────
+
+function buildBasicPrompt(content, countHint) {
+  return (
+    'Convert the following study material into Anki flashcards. ' + countHint + '\n\n' +
+    'Rules:\n' +
+    '- Each card tests ONE atomic concept\n' +
+    '- Fronts are concise, specific questions\n' +
+    '- Backs are accurate answers (no filler text)\n' +
+    '- Use plain language; avoid jargon unless the material requires it\n' +
+    '- Tags: 1–3 lowercase topic keywords, hyphens for spaces (e.g. "machine-learning")\n\n' +
+    'Return ONLY a JSON array:\n' +
+    '[{"front": "...", "back": "...", "tags": ["tag1"]}, ...]\n\n' +
+    'Study material:\n' + content
+  );
+}
+
+function buildClozePrompt(content, countHint) {
+  return (
+    'Convert the following study material into Anki CLOZE flashcards. ' + countHint + '\n\n' +
+    'Rules:\n' +
+    '- Each card is a sentence or short paragraph with key terms hidden using {{c1::term}} syntax\n' +
+    '- Use {{c1::term}} for the first blank, {{c2::term}} for a second blank in the same card, etc.\n' +
+    '- Each card should hide 1–3 of the most important terms — not every word\n' +
+    '- The sentence should make full sense when the blanks are revealed\n' +
+    '- Keep sentences concise and factually precise\n' +
+    '- "extra" field: add a brief clarification or memory hint (optional, can be empty string)\n' +
+    '- Tags: 1–3 lowercase topic keywords, hyphens for spaces\n\n' +
+    'Example output:\n' +
+    '[{"text": "The {{c1::mitochondria}} is the powerhouse of the {{c2::cell}}.", "extra": "Found in eukaryotic cells", "tags": ["biology","cell"]}, ...]\n\n' +
+    'Return ONLY a JSON array:\n' +
+    '[{"text": "...", "extra": "...", "tags": ["tag1"]}, ...]\n\n' +
+    'Study material:\n' + content
+  );
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
