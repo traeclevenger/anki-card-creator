@@ -6,6 +6,14 @@
   <title>Anki Card Creator</title>
   <link rel="icon" type="image/png" href="favicon.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module" id="pdfjs-script"></script>
+  <script>
+    // PDF.js requires its worker to match the library version
+    window._pdfjsReady = import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs').then(m => {
+      m.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+      window.pdfjsLib = m;
+    });
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -206,8 +214,8 @@
     <div id="tab-file" class="tab-panel">
       <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
         <div>Drop a file here or click to browse</div>
-        <div style="font-size:0.8rem;margin-top:4px;color:#4a5068">.txt, .md, .docx supported</div>
-        <input type="file" id="file-input" accept=".txt,.md,.docx" onchange="handleFile(event)" />
+        <div style="font-size:0.8rem;margin-top:4px;color:#4a5068">.txt, .md, .docx, .pdf supported</div>
+        <input type="file" id="file-input" accept=".txt,.md,.docx,.pdf" onchange="handleFile(event)" />
       </div>
       <div class="file-name" id="file-name"></div>
     </div>
@@ -359,10 +367,23 @@
     document.getElementById('file-name').textContent = `Loading ${file.name}…`;
     try {
       let text;
-      if (file.name.toLowerCase().endsWith('.docx')) {
+      const name = file.name.toLowerCase();
+      if (name.endsWith('.docx')) {
         const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
         text = result.value;
-      } else { text = await file.text(); }
+      } else if (name.endsWith('.pdf')) {
+        await window._pdfjsReady;
+        const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+        const pages = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(content.items.map(item => item.str).join(' '));
+        }
+        text = pages.join('\n\n');
+      } else {
+        text = await file.text();
+      }
       document.getElementById('content').value = text;
       document.getElementById('file-name').textContent = `✓ ${file.name} loaded (${text.length.toLocaleString()} chars)`;
       switchTab('paste');
