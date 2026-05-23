@@ -107,11 +107,11 @@
     /* Image Occlusion editor */
     .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
     .occ-left { flex: 1; min-width: 0; }
-    .occ-right { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 150px); overflow-y: auto; }
+    .occ-right { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
     .occ-right .occ-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
     .occ-right .occ-toolbar .btn { width: 100%; justify-content: center; }
     .occ-right .occ-box-list { flex: 1; min-height: 60px; max-height: none; margin-top: 0; }
-    .occ-viewport { max-height: calc(100vh - 150px); min-height: 180px; overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
+    .occ-viewport { overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
     .occ-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
@@ -135,8 +135,10 @@
     .sidebar .row { flex-direction: column; gap: 14px; }
     .main-col { flex: 1; min-width: 0; }
     @media (max-width: 800px) {
-      .occ-editor-layout { flex-direction: column; }
-      .occ-right { width: 100%; max-height: none; }
+      .occ-editor-layout { flex-direction: column; align-items: flex-start; }
+      .occ-left { width: 100%; }
+      .occ-right { width: 100%; }
+      .occ-viewport { max-height: calc(100vh - 460px); }
     }
     @media (max-width: 520px) {
       .layout { flex-direction: column; }
@@ -678,10 +680,7 @@
   function fitZoom() {
     const viewport = document.getElementById('occ-viewport');
     const maxW = viewport.clientWidth || 800;
-    const maxH = Math.max(180, window.innerHeight - 150); // matches calc(100vh - 150px)
-    const zoomW = maxW / oImgW;
-    const zoomH = maxH / oImgH;
-    oZoom = Math.min(1, zoomW, zoomH);        // constrain by whichever axis is tighter
+    oZoom = Math.min(1, maxW / oImgW);   // fit to available width; height auto-follows
     applyZoom();
   }
 
