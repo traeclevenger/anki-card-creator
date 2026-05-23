@@ -648,17 +648,15 @@
   function clearAllBoxes() { oBoxes = []; oSelected = null; renderOcclusion(); }
 
   // ── Image Occlusion: zoom ─────────────────────────────────────────────────────
-  function initZoom() {
-    const viewport = document.getElementById('occ-viewport');
-    const maxW = viewport.clientWidth || 800;
-    oZoom = Math.min(1, maxW / oImgW);
-    applyZoom();
-  }
+  function initZoom() { fitZoom(); }
 
   function fitZoom() {
     const viewport = document.getElementById('occ-viewport');
     const maxW = viewport.clientWidth || 800;
-    oZoom = Math.min(1, maxW / oImgW);
+    const maxH = window.innerHeight * 0.65;   // matches the 65vh CSS max-height
+    const zoomW = maxW / oImgW;
+    const zoomH = maxH / oImgH;
+    oZoom = Math.min(1, zoomW, zoomH);        // constrain by whichever axis is tighter
     applyZoom();
   }
 
