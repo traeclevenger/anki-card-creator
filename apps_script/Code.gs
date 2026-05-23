@@ -102,7 +102,8 @@ function handleAnalyzeImage(body) {
     'Grid lines appear every 10%.\n\n' +
     'Find every TEXT LABEL, name, number, or annotation printed on this study image that students need to memorize. ' +
     'Focus on TEXT — labels on anatomical structures, numbered items, key terms written on the image. ' +
-    'Do NOT identify the structures themselves, only their text labels.\n\n' +
+    'Do NOT identify the structures themselves, only their text labels. ' +
+    'IGNORE any title, heading, or caption banner at the very top of the image (typically above y_pct 8).\n\n' +
     'For each label provide:\n' +
     '- label: the exact text as it appears on the image\n' +
     '- x_pct: left edge of the box as % of image width — READ FROM THE GRID, use one decimal place (e.g. 23.5)\n' +

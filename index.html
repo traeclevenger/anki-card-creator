@@ -100,7 +100,7 @@
     .cloze-token { color: #82c8e8; font-weight: 600; }
 
     /* Image Occlusion editor */
-    .occ-viewport { max-height: 65vh; overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
+    .occ-viewport { max-height: calc(100vh - 460px); min-height: 180px; overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
     .occ-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
@@ -110,19 +110,62 @@
     .zoom-label { color: #64748b; font-size: 0.8rem; min-width: 42px; text-align: center; }
     .occ-toolbar { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
     .occ-hint-text { font-size: 0.78rem; color: #64748b; margin-top: 8px; }
-    .occ-box-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+    .occ-box-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
     .occ-box-item { display: flex; align-items: center; gap: 8px; background: #111d2e; border: 1px solid #1e3045; border-radius: 6px; padding: 7px 10px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
     .occ-box-num { background: #ffeba2; color: #444; font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; min-width: 22px; text-align: center; flex-shrink: 0; }
     .occ-box-label { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 0.875rem; outline: none; min-width: 0; }
     .occ-box-label::placeholder { color: #4a5068; }
     .occ-empty { color: #4a5068; font-size: 0.85rem; padding: 8px 0; }
+
+    /* Two-column layout */
+    .layout { display: flex; gap: 20px; align-items: flex-start; }
+    .sidebar { flex: 0 0 260px; max-width: 260px; position: sticky; top: 20px; }
+    .sidebar .row { flex-direction: column; gap: 14px; }
+    .main-col { flex: 1; min-width: 0; }
+    @media (max-width: 520px) {
+      .layout { flex-direction: column; }
+      .sidebar { flex: none; max-width: 100%; position: static; }
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>Anki Card Creator</h1>
   <p class="subtitle">Powered by Claude AI + AnkiConnect</p>
+
+  <div class="layout">
+    <!-- Left sidebar: Settings -->
+    <div class="sidebar">
+      <div class="card">
+        <div class="card-title">Settings</div>
+        <div style="margin-bottom:18px">
+          <label>Card Type</label>
+          <div class="type-toggle">
+            <button class="type-btn active" id="type-basic"     onclick="setCardType('basic')">Basic (Q&amp;A)</button>
+            <button class="type-btn"        id="type-cloze"     onclick="setCardType('cloze')">Cloze (Fill-in-blank)</button>
+            <button class="type-btn"        id="type-occlusion" onclick="setCardType('occlusion')">Image Occlusion</button>
+          </div>
+          <div id="cloze-hint" class="cloze-hint" style="display:none">
+            Claude will wrap key terms like <code>{{c1::answer}}</code> — you can edit these in the preview below.
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <label>Target Deck</label>
+          <select id="deck-select" onchange="onDeckChange()" style="width:100%">
+            <option value="">Loading decks…</option>
+          </select>
+          <input type="text" class="new-deck-input" id="new-deck-name" placeholder="New deck name" style="width:100%;margin-top:8px" />
+        </div>
+        <div id="card-count-wrap">
+          <label>Card Count (optional)</label>
+          <input type="number" id="card-count" placeholder="Auto (10–30)" min="1" max="100" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-col">
 
   <!-- Study Material (Basic / Cloze) -->
   <div class="card" id="study-material-card">
@@ -184,38 +227,9 @@
         <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
       </div>
       <div class="status" id="occ-status"></div>
-    </div>
-  </div>
-
-  <!-- Settings -->
-  <div class="card">
-    <div class="card-title">Settings</div>
-    <div class="row" style="margin-bottom:18px">
-      <div>
-        <label>Card Type</label>
-        <div class="type-toggle">
-          <button class="type-btn active" id="type-basic"     onclick="setCardType('basic')">Basic (Q&amp;A)</button>
-          <button class="type-btn"        id="type-cloze"     onclick="setCardType('cloze')">Cloze (Fill-in-blank)</button>
-          <button class="type-btn"        id="type-occlusion" onclick="setCardType('occlusion')">Image Occlusion</button>
-        </div>
-        <div id="cloze-hint" class="cloze-hint" style="display:none">
-          Claude will wrap key terms like <code>{{c1::answer}}</code> — you can edit these in the preview below.
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label>Target Deck</label>
-        <div style="display:flex;gap:8px;align-items:flex-end">
-          <select id="deck-select" onchange="onDeckChange()" style="flex:1">
-            <option value="">Loading decks…</option>
-          </select>
-          <input type="text" class="new-deck-input" id="new-deck-name" placeholder="New deck name" style="flex:1" />
-        </div>
-      </div>
-      <div id="card-count-wrap">
-        <label>Card Count (optional)</label>
-        <input type="number" id="card-count" placeholder="Auto (10–30)" min="1" max="100" />
+      <div style="margin-top:12px">
+        <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:12px">Add to Anki</button>
+        <div class="status" id="occ-add-status"></div>
       </div>
     </div>
   </div>
@@ -252,14 +266,9 @@
     <div class="status" id="add-status"></div>
   </div>
 
-  <!-- Occlusion Add to Anki -->
-  <div id="occ-add-wrap" style="display:none;margin-bottom:20px">
-    <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:14px">
-      Add to Anki
-    </button>
-    <div class="status" id="occ-add-status"></div>
-  </div>
-</div>
+    </div><!-- /main-col -->
+  </div><!-- /layout -->
+</div><!-- /container -->
 
 <script>
   // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -293,7 +302,6 @@
     document.getElementById('occlusion-card').style.display    = type === 'occlusion' ? 'block' : 'none';
     document.getElementById('generate-wrap').style.display     = type === 'occlusion' ? 'none'  : 'block';
     document.getElementById('cards-section').style.display     = type === 'occlusion' ? 'none'  : (cards.length ? 'block' : 'none');
-    document.getElementById('occ-add-wrap').style.display      = type === 'occlusion' ? 'block' : 'none';
     document.getElementById('card-count-wrap').style.display   = type === 'occlusion' ? 'none'  : 'block';
     if (type !== 'occlusion' && cards.length) renderCards();
   }
@@ -653,7 +661,7 @@
   function fitZoom() {
     const viewport = document.getElementById('occ-viewport');
     const maxW = viewport.clientWidth || 800;
-    const maxH = window.innerHeight * 0.65;   // matches the 65vh CSS max-height
+    const maxH = Math.max(180, window.innerHeight - 460); // matches calc(100vh - 460px)
     const zoomW = maxW / oImgW;
     const zoomH = maxH / oImgH;
     oZoom = Math.min(1, zoomW, zoomH);        // constrain by whichever axis is tighter
@@ -676,10 +684,19 @@
     const ctx = canvas.getContext('2d');
     ctx.drawImage(document.getElementById('occ-img'), 0, 0, oImgW, oImgH);
 
-    // Grid lines at every 10%
-    const lw = Math.max(1, oImgW / 700);
-    ctx.strokeStyle = 'rgba(220,0,0,0.45)';
+    // Minor grid lines every 5%
+    const lw = Math.max(0.5, oImgW / 1200);
+    ctx.strokeStyle = 'rgba(220,0,0,0.25)';
     ctx.lineWidth = lw;
+    for (let p = 5; p < 100; p += 5) {
+      if (p % 10 === 0) continue; // skip major lines (drawn separately)
+      const x = oImgW * p / 100, y = oImgH * p / 100;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, oImgH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(oImgW, y); ctx.stroke();
+    }
+    // Major grid lines every 10%
+    ctx.strokeStyle = 'rgba(220,0,0,0.5)';
+    ctx.lineWidth = lw * 2;
     for (let p = 10; p < 100; p += 10) {
       const x = oImgW * p / 100, y = oImgH * p / 100;
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, oImgH); ctx.stroke();
