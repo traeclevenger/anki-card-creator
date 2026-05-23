@@ -492,11 +492,8 @@
         tags: c.tags || [],
         options: { allowDuplicate: false, duplicateScope: 'deck' }
       }));
-      const result = await ankiAction('addNotes', { notes });
-      const results = result.result || [];
-      const added = results.filter(r => r !== null).length;
-      const dupes = results.filter(r => r === null).length;
-      showStatus('add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} skipped as duplicates)` : ''));
+      const { added, dupes } = await ankiAddNotes(notes);
+      showStatus('add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} duplicate${dupes!==1?'s':''} skipped)` : ''));
     } catch (err) { showStatus('add-status', 'error', err.message); }
     finally { btn.disabled = false; btn.innerHTML = 'Add to Anki'; }
   }
@@ -837,21 +834,34 @@
         return { deckName: deck, modelName: 'Basic', fields: { Front: front, Back: back }, tags: ['image-occlusion'], options: { allowDuplicate: false, duplicateScope: 'deck' } };
       });
 
-      const result = await ankiAction('addNotes', { notes });
-      const results = result.result || [];
-      const added = results.filter(r => r !== null).length;
-      const dupes = results.filter(r => r === null).length;
-      showStatus('occ-add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} skipped as duplicates)` : ''));
+      const { added, dupes } = await ankiAddNotes(notes);
+      showStatus('occ-add-status', 'success', `Done! Added ${added} card${added!==1?'s':''} to "${deck}".` + (dupes > 0 ? ` (${dupes} duplicate${dupes!==1?'s':''} skipped)` : ''));
     } catch (err) { showStatus('occ-add-status', 'error', err.message); }
     finally { btn.disabled = false; btn.innerHTML = 'Add to Anki'; }
   }
 
-  // ── AnkiConnect helper ────────────────────────────────────────────────────────
+  // ── AnkiConnect helpers ───────────────────────────────────────────────────────
   async function ankiAction(action, params) {
     const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action, version: 6, params }) });
     const data = await res.json();
     if (data.error) throw new Error(`AnkiConnect: ${data.error}`);
     return data;
+  }
+
+  // addNotes returns per-note nulls for duplicates; data.error may be a non-fatal
+  // array of per-note messages — don't throw, just count outcomes from data.result.
+  async function ankiAddNotes(notes) {
+    const res = await fetch(ANKI_CONNECT_URL, { method: 'POST', body: JSON.stringify({ action: 'addNotes', version: 6, params: { notes } }) });
+    const data = await res.json();
+    // A top-level string error means the action itself failed (e.g. deck missing)
+    if (data.error && !Array.isArray(data.error) && typeof data.error === 'string' && !data.result) {
+      throw new Error(`AnkiConnect: ${data.error}`);
+    }
+    const results = Array.isArray(data.result) ? data.result : [];
+    return {
+      added: results.filter(r => r !== null).length,
+      dupes:  results.filter(r => r === null).length,
+    };
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
