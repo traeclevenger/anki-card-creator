@@ -138,7 +138,7 @@
     .occ-action-row .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 7px 6px; }
     .occ-box-item { display: flex; align-items: center; gap: 6px; background: #111d2e; border: 1px solid #1e3045; border-radius: 5px; padding: 4px 7px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
-    .occ-box-num { background: #ffeba2; color: #444; font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; min-width: 20px; text-align: center; flex-shrink: 0; }
+    .occ-box-num { background: #000; color: #fff; font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; min-width: 20px; text-align: center; flex-shrink: 0; }
     .occ-box-label { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 0.78rem; outline: none; min-width: 0; }
     .occ-box-label::placeholder { color: #4a5068; }
     .occ-empty { color: #4a5068; font-size: 0.8rem; padding: 6px 0; }
@@ -676,7 +676,7 @@
 
     let out = oBoxes.map((b, i) => {
       const sel = b.id === oSelected;
-      const stroke = sel ? '#3d97cc' : '#e08000';
+      const stroke = sel ? '#3d97cc' : '#cc0000';
       const sw = sel ? 3 : 2;
       const num = i + 1;
       const fs = Math.max(Math.min(b.w, b.h) * 0.35, oImgW * 0.015);
@@ -686,7 +686,7 @@
           handles += `<rect x="${hx-hs/2}" y="${hy-hs/2}" width="${hs}" height="${hs}" rx="2" fill="#3d97cc" stroke="white" stroke-width="1.5" style="cursor:${n}-resize" />`;
         });
       }
-      return `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="5" fill="#ffeba2" fill-opacity="0.82" stroke="${stroke}" stroke-width="${sw}" />
+      return `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="5" fill="#000000" fill-opacity="0.85" stroke="${stroke}" stroke-width="${sw}" />
         <text x="${b.x+b.w/2}" y="${b.y+b.h/2}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="#333" pointer-events="none">${num}</text>
         ${handles}`;
     }).join('');
@@ -695,7 +695,7 @@
     if (drawCursor && oOp && oOp.type === 'draw') {
       const x = Math.min(oOp.sx, drawCursor.x), y = Math.min(oOp.sy, drawCursor.y);
       const w = Math.abs(drawCursor.x - oOp.sx), h = Math.abs(drawCursor.y - oOp.sy);
-      out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#ffeba2" fill-opacity="0.5" stroke="#3d97cc" stroke-width="2" stroke-dasharray="8 4" />`;
+      out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#000000" fill-opacity="0.5" stroke="#3d97cc" stroke-width="2" stroke-dasharray="8 4" />`;
     }
 
     svg.innerHTML = out;
@@ -826,7 +826,7 @@
         const front =
           `<div style="text-align:center"><div style="position:relative;display:inline-block;max-width:100%">` +
           `<img src="${oFilename}" style="width:100%;display:block;max-width:600px">` +
-          `<div style="position:absolute;left:${xp}%;top:${yp}%;width:${wp}%;height:${hp}%;background:#ffeba2;border:2px solid #e08000;border-radius:4px;box-sizing:border-box"></div>` +
+          `<div style="position:absolute;left:${xp}%;top:${yp}%;width:${wp}%;height:${hp}%;background:#000000;border:2px solid #cc0000;border-radius:4px;box-sizing:border-box"></div>` +
           `</div></div>` +
           `<span style="display:none">${label}-${i+1}-${oFilename}</span>`;
         const back =
