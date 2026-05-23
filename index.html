@@ -10,11 +10,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0e1520; color: #e2e8f0; min-height: 100vh; padding: 32px 16px;
+      background: #0e1520; color: #e2e8f0; min-height: 100vh; padding: 68px 16px 32px;
     }
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #0e1520; border-bottom: 1px solid #1e3045;
+      padding: 11px 20px; display: flex; align-items: baseline; gap: 14px;
+    }
+    .app-header-title { font-size: 1.1rem; font-weight: 700; color: #f8fafc; }
+    .app-header-sub { color: #64748b; font-size: 0.8rem; }
     .container { max-width: 900px; margin: 0 auto; }
-    h1 { font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
-    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
 
     .card { background: #161e2a; border: 1px solid #1e3045; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
     .card-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7c88a8; margin-bottom: 14px; }
@@ -100,7 +105,13 @@
     .cloze-token { color: #82c8e8; font-weight: 600; }
 
     /* Image Occlusion editor */
-    .occ-viewport { max-height: calc(100vh - 460px); min-height: 180px; overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
+    .occ-editor-layout { display: flex; gap: 16px; align-items: flex-start; }
+    .occ-left { flex: 1; min-width: 0; }
+    .occ-right { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 150px); overflow-y: auto; }
+    .occ-right .occ-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .occ-right .occ-toolbar .btn { width: 100%; justify-content: center; }
+    .occ-right .occ-box-list { flex: 1; min-height: 60px; max-height: none; margin-top: 0; }
+    .occ-viewport { max-height: calc(100vh - 150px); min-height: 180px; overflow: auto; border-radius: 8px; background: #0a1018; line-height: 0; }
     .occ-img-wrap { position: relative; user-select: none; display: inline-block; }
     .occ-img-wrap img { display: block; width: 100%; pointer-events: none; }
     .occ-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
@@ -110,7 +121,7 @@
     .zoom-label { color: #64748b; font-size: 0.8rem; min-width: 42px; text-align: center; }
     .occ-toolbar { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
     .occ-hint-text { font-size: 0.78rem; color: #64748b; margin-top: 8px; }
-    .occ-box-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
+    .occ-box-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; } /* overridden inside .occ-right */
     .occ-box-item { display: flex; align-items: center; gap: 8px; background: #111d2e; border: 1px solid #1e3045; border-radius: 6px; padding: 7px 10px; cursor: pointer; transition: border-color 0.15s; }
     .occ-box-item.sel { border-color: #3d97cc; background: #122a3d; }
     .occ-box-num { background: #ffeba2; color: #444; font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; min-width: 22px; text-align: center; flex-shrink: 0; }
@@ -120,9 +131,13 @@
 
     /* Two-column layout */
     .layout { display: flex; gap: 20px; align-items: flex-start; }
-    .sidebar { flex: 0 0 260px; max-width: 260px; position: sticky; top: 20px; }
+    .sidebar { flex: 0 0 260px; max-width: 260px; position: sticky; top: 72px; }
     .sidebar .row { flex-direction: column; gap: 14px; }
     .main-col { flex: 1; min-width: 0; }
+    @media (max-width: 800px) {
+      .occ-editor-layout { flex-direction: column; }
+      .occ-right { width: 100%; max-height: none; }
+    }
     @media (max-width: 520px) {
       .layout { flex-direction: column; }
       .sidebar { flex: none; max-width: 100%; position: static; }
@@ -130,10 +145,11 @@
   </style>
 </head>
 <body>
+<header class="app-header">
+  <span class="app-header-title">Anki Card Creator</span>
+  <span class="app-header-sub">Powered by Claude AI + AnkiConnect</span>
+</header>
 <div class="container">
-  <h1>Anki Card Creator</h1>
-  <p class="subtitle">Powered by Claude AI + AnkiConnect</p>
-
   <div class="layout">
     <!-- Left sidebar: Settings -->
     <div class="sidebar">
@@ -145,9 +161,6 @@
             <button class="type-btn active" id="type-basic"     onclick="setCardType('basic')">Basic (Q&amp;A)</button>
             <button class="type-btn"        id="type-cloze"     onclick="setCardType('cloze')">Cloze (Fill-in-blank)</button>
             <button class="type-btn"        id="type-occlusion" onclick="setCardType('occlusion')">Image Occlusion</button>
-          </div>
-          <div id="cloze-hint" class="cloze-hint" style="display:none">
-            Claude will wrap key terms like <code>{{c1::answer}}</code> — you can edit these in the preview below.
           </div>
         </div>
         <div style="margin-bottom:14px">
@@ -203,33 +216,39 @@
 
     <!-- Editor (shown after image loaded) -->
     <div id="occ-editor" style="display:none">
-      <div class="occ-viewport" id="occ-viewport">
-        <div class="occ-img-wrap" id="occ-img-wrap">
-          <img id="occ-img" src="" alt="" />
-          <svg id="occ-svg" class="occ-svg"></svg>
+      <div class="occ-editor-layout">
+        <!-- Left: image + zoom -->
+        <div class="occ-left">
+          <div class="occ-viewport" id="occ-viewport">
+            <div class="occ-img-wrap" id="occ-img-wrap">
+              <img id="occ-img" src="" alt="" />
+              <svg id="occ-svg" class="occ-svg"></svg>
+            </div>
+          </div>
+          <div class="occ-zoom-bar">
+            <button class="zoom-btn" onclick="fitZoom()">Fit</button>
+            <button class="zoom-btn" onclick="zoomOut()">−</button>
+            <span id="zoom-label" class="zoom-label">100%</span>
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+          </div>
         </div>
-      </div>
-      <div class="occ-zoom-bar">
-        <button class="zoom-btn" onclick="fitZoom()">Fit</button>
-        <button class="zoom-btn" onclick="zoomOut()">−</button>
-        <span id="zoom-label" class="zoom-label">100%</span>
-        <button class="zoom-btn" onclick="zoomIn()">+</button>
-      </div>
-      <div class="occ-hint-text">Drag on the image to draw a box. Click a box to select — drag to move, drag corners to resize. Delete key removes selected box.</div>
-
-      <div class="occ-box-list" id="occ-box-list">
-        <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
-      </div>
-
-      <div class="occ-toolbar">
-        <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
-        <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
-        <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
-      </div>
-      <div class="status" id="occ-status"></div>
-      <div style="margin-top:12px">
-        <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:12px">Add to Anki</button>
-        <div class="status" id="occ-add-status"></div>
+        <!-- Right: labels + controls -->
+        <div class="occ-right">
+          <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
+          <div class="occ-box-list" id="occ-box-list">
+            <div class="occ-empty">Draw boxes on the image, or click "Analyze with Claude" below.</div>
+          </div>
+          <div class="occ-toolbar">
+            <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
+            <button class="btn btn-ghost" onclick="clearAllBoxes()">Clear All</button>
+            <button class="btn btn-ghost" onclick="resetOcclusionImage()">Change Image</button>
+          </div>
+          <div class="status" id="occ-status"></div>
+          <div>
+            <button class="btn btn-success" id="occ-add-btn" onclick="addOcclusionToAnki()" style="width:100%;justify-content:center;padding:12px">Add to Anki</button>
+            <div class="status" id="occ-add-status"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -297,7 +316,6 @@
     ['basic','cloze','occlusion'].forEach(t =>
       document.getElementById('type-' + t).classList.toggle('active', t === type)
     );
-    document.getElementById('cloze-hint').style.display        = type === 'cloze'     ? 'block' : 'none';
     document.getElementById('study-material-card').style.display = type === 'occlusion' ? 'none'  : 'block';
     document.getElementById('occlusion-card').style.display    = type === 'occlusion' ? 'block' : 'none';
     document.getElementById('generate-wrap').style.display     = type === 'occlusion' ? 'none'  : 'block';
@@ -456,8 +474,7 @@
         initSVGEditor();
         document.getElementById('occ-upload').style.display = 'none';
         document.getElementById('occ-editor').style.display = 'block';
-        initZoom();
-        renderOcclusion();
+        setTimeout(() => { initZoom(); renderOcclusion(); }, 0);
       };
       document.getElementById('occ-file-name').textContent = `✓ ${file.name} (${w}×${h})`;
     } catch (err) { document.getElementById('occ-file-name').textContent = `Error: ${err.message}`; }
@@ -661,7 +678,7 @@
   function fitZoom() {
     const viewport = document.getElementById('occ-viewport');
     const maxW = viewport.clientWidth || 800;
-    const maxH = Math.max(180, window.innerHeight - 460); // matches calc(100vh - 460px)
+    const maxH = Math.max(180, window.innerHeight - 150); // matches calc(100vh - 150px)
     const zoomW = maxW / oImgW;
     const zoomH = maxH / oImgH;
     oZoom = Math.min(1, zoomW, zoomH);        // constrain by whichever axis is tighter
