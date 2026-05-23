@@ -12,7 +12,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f1117;
+      background: #0e1520;
       color: #e2e8f0;
       min-height: 100vh;
       padding: 32px 16px;
@@ -24,8 +24,8 @@
     .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
 
     .card {
-      background: #1e2130;
-      border: 1px solid #2d3148;
+      background: #161e2a;
+      border: 1px solid #1e3045;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 20px;
@@ -44,8 +44,8 @@
 
     select, textarea, input[type="number"], input[type="text"] {
       width: 100%;
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #0e1520;
+      border: 1px solid #1e3045;
       border-radius: 8px;
       color: #e2e8f0;
       font-size: 0.9rem;
@@ -53,7 +53,7 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    select:focus, textarea:focus, input:focus { border-color: #6366f1; }
+    select:focus, textarea:focus, input:focus { border-color: #3d97cc; }
     textarea { resize: vertical; min-height: 160px; font-family: inherit; line-height: 1.6; }
 
     .row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
@@ -68,10 +68,10 @@
     .btn:hover:not(:disabled) { opacity: 0.85; }
     .btn:active:not(:disabled) { transform: scale(0.98); }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-primary { background: #3d97cc; color: #fff; }
     .btn-success { background: #22c55e; color: #fff; }
     .btn-ghost {
-      background: transparent; border: 1px solid #2d3148;
+      background: transparent; border: 1px solid #1e3045;
       color: #94a3b8; padding: 6px 12px; font-size: 0.8rem;
     }
     .btn-danger {
@@ -81,21 +81,21 @@
     .btn-danger:hover { background: #2d1e1e; }
 
     .upload-zone {
-      border: 2px dashed #2d3148; border-radius: 8px; padding: 20px;
+      border: 2px dashed #1e3045; border-radius: 8px; padding: 20px;
       text-align: center; cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
       color: #64748b; font-size: 0.875rem; margin-top: 10px;
     }
-    .upload-zone:hover, .upload-zone.drag { border-color: #6366f1; background: #1a1e30; color: #a5b4fc; }
+    .upload-zone:hover, .upload-zone.drag { border-color: #3d97cc; background: #112030; color: #82c8e8; }
     .upload-zone input { display: none; }
-    .file-name { font-size: 0.8rem; color: #6366f1; margin-top: 6px; }
+    .file-name { font-size: 0.8rem; color: #3d97cc; margin-top: 6px; }
 
     .tabs { display: flex; gap: 4px; margin-bottom: 14px; }
     .tab {
       padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer;
       color: #64748b; border: 1px solid transparent; background: transparent;
     }
-    .tab.active { background: #2d3148; color: #e2e8f0; border-color: #3d4263; }
+    .tab.active { background: #1e3045; color: #e2e8f0; border-color: #1e3a55; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
@@ -104,32 +104,32 @@
       justify-content: space-between; margin-bottom: 14px;
     }
     .badge {
-      background: #2d3148; color: #a5b4fc;
+      background: #1e3045; color: #82c8e8;
       font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; font-weight: 600;
     }
 
     .card-table { width: 100%; border-collapse: collapse; }
     .card-table th {
       font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
-      color: #64748b; padding: 8px 10px; text-align: left; border-bottom: 1px solid #2d3148;
+      color: #64748b; padding: 8px 10px; text-align: left; border-bottom: 1px solid #1e3045;
     }
     .card-table td {
-      padding: 8px 10px; border-bottom: 1px solid #1a1e2e;
+      padding: 8px 10px; border-bottom: 1px solid #111d2e;
       vertical-align: top; font-size: 0.875rem;
     }
     .card-table tr:last-child td { border-bottom: none; }
-    .card-table tr:hover td { background: #1a1e2e; }
+    .card-table tr:hover td { background: #111d2e; }
 
     .editable {
       background: transparent; border: 1px solid transparent; border-radius: 4px;
       color: #e2e8f0; font-size: 0.875rem; padding: 4px 6px; width: 100%;
       resize: none; font-family: inherit; line-height: 1.5; min-height: 36px;
     }
-    .editable:focus { border-color: #4f5475; background: #0f1117; outline: none; }
+    .editable:focus { border-color: #2d5575; background: #0f1117; outline: none; }
 
     .tags-cell { display: flex; flex-wrap: wrap; gap: 4px; }
     .tag-chip {
-      background: #1e2d40; color: #7dd3fc;
+      background: #122a3d; color: #82c8e8;
       font-size: 0.72rem; padding: 2px 7px; border-radius: 10px;
     }
 
@@ -137,7 +137,7 @@
       padding: 10px 14px; border-radius: 8px; font-size: 0.875rem;
       margin-top: 12px; display: none;
     }
-    .status.info    { background: #1e2d40; color: #7dd3fc; border: 1px solid #1e4060; display: block; }
+    .status.info    { background: #122a3d; color: #82c8e8; border: 1px solid #0e3050; display: block; }
     .status.error   { background: #2d1e1e; color: #fca5a5; border: 1px solid #4d2020; display: block; }
     .status.success { background: #1a2e1a; color: #86efac; border: 1px solid #1e4a1e; display: block; }
 
@@ -155,18 +155,18 @@
     .new-deck-input.visible { display: block; }
 
     /* Card type toggle */
-    .type-toggle { display: flex; gap: 0; border: 1px solid #2d3148; border-radius: 8px; overflow: hidden; width: fit-content; }
+    .type-toggle { display: flex; gap: 0; border: 1px solid #1e3045; border-radius: 8px; overflow: hidden; width: fit-content; }
     .type-btn {
       padding: 7px 18px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
       background: transparent; border: none; color: #64748b; transition: background 0.15s, color 0.15s;
     }
-    .type-btn.active { background: #6366f1; color: #fff; }
-    .type-btn:not(.active):hover { background: #2d3148; color: #e2e8f0; }
+    .type-btn.active { background: #3d97cc; color: #fff; }
+    .type-btn:not(.active):hover { background: #1e3045; color: #e2e8f0; }
 
     /* Cloze syntax highlight in preview */
     .cloze-hint { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
-    .cloze-hint code { background: #2d3148; color: #a5b4fc; padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
-    .cloze-token { color: #a5b4fc; font-weight: 600; }
+    .cloze-hint code { background: #1e3045; color: #82c8e8; padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
+    .cloze-token { color: #82c8e8; font-weight: 600; }
   </style>
 </head>
 <body>
