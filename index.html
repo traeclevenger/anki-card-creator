@@ -259,6 +259,11 @@
               <span id="zoom-label" class="zoom-label">100%</span>
               <button class="zoom-btn" onclick="zoomIn()">+</button>
             </div>
+            <div class="occ-zoom-bar" id="occ-page-bar" style="display:none">
+              <button class="zoom-btn" onclick="changePdfPage(-1)">←</button>
+              <span id="occ-page-label" class="zoom-label" style="min-width:60px">1 / 1</span>
+              <button class="zoom-btn" onclick="changePdfPage(1)">→</button>
+            </div>
             <div class="occ-hint-text">Drag to draw a box. Click to select, drag to move, corner handles to resize. Delete removes selected.</div>
             <div class="occ-actions">
               <button class="btn btn-primary" id="analyze-btn" onclick="analyzeImage()">Analyze with Claude</button>
@@ -341,6 +346,8 @@
   let oSelected = null;         // selected box id
   let oOp = null;               // current drag op: {type, ...}
   let oZoom = 1;                // current zoom level (1 = 100%)
+  let oPdfDoc = null;           // loaded PDF.js document (null for plain images)
+  let oPdfPage = 1;             // current PDF page number
 
   // ── Card type toggle ──────────────────────────────────────────────────────────
   function setCardType(type) {
@@ -506,10 +513,13 @@
 
   function loadOcclusionImage(e) { if (e.target.files.length) processOcclusionFile(e.target.files[0]); }
 
-  async function pdfToImage(file) {
+  async function pdfToImage(file, pageNum) {
     await window._pdfjsReady;
-    const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-    const page = await pdf.getPage(1);
+    const pdf = file
+      ? await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise
+      : oPdfDoc;                                         // reuse already-loaded doc
+    if (file) oPdfDoc = pdf;                             // cache for page changes
+    const page = await pdf.getPage(pageNum || 1);
     const scale = 2;                                       // 2× for sharp rendering
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
@@ -538,28 +548,59 @@
     });
   }
 
+  async function loadOcclusionImageData({ b64, w, h, mediaType, dataUrl }) {
+    oB64 = b64; oImgW = w; oImgH = h; oMediaType = mediaType;
+    oFilename = 'anki-occ-' + Date.now() + '.jpg';
+    oBoxes = []; oNextId = 1; oSelected = null;
+    const img = document.getElementById('occ-img');
+    img.src = dataUrl;
+    img.onload = () => {
+      document.getElementById('occ-svg').setAttribute('viewBox', `0 0 ${oImgW} ${oImgH}`);
+      initSVGEditor();
+      document.getElementById('occ-upload').style.display = 'none';
+      document.getElementById('occ-editor').style.display = 'block';
+      setTimeout(() => { initZoom(); renderOcclusion(); sizeOccRight(); }, 0);
+    };
+  }
+
   async function processOcclusionFile(file) {
     document.getElementById('occ-file-name').textContent = `Loading ${file.name}…`;
     try {
       const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
-      const { b64, w, h, mediaType, dataUrl } = isPdf
-        ? await pdfToImage(file)
-        : await resizeForUpload(file);
-      oB64 = b64; oImgW = w; oImgH = h; oMediaType = mediaType;
-      oFilename = 'anki-occ-' + Date.now() + '.jpg';
-      oBoxes = []; oNextId = 1; oSelected = null;
-
-      const img = document.getElementById('occ-img');
-      img.src = dataUrl;
-      img.onload = () => {
-        document.getElementById('occ-svg').setAttribute('viewBox', `0 0 ${oImgW} ${oImgH}`);
-        initSVGEditor();
-        document.getElementById('occ-upload').style.display = 'none';
-        document.getElementById('occ-editor').style.display = 'block';
-        setTimeout(() => { initZoom(); renderOcclusion(); sizeOccRight(); }, 0);
-      };
-      document.getElementById('occ-file-name').textContent = `✓ ${file.name} (${w}×${h})`;
+      oPdfDoc = null; oPdfPage = 1;
+      if (isPdf) {
+        await window._pdfjsReady;
+        oPdfDoc = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+        oPdfPage = 1;
+        const pageBar = document.getElementById('occ-page-bar');
+        const pageLabel = document.getElementById('occ-page-label');
+        if (oPdfDoc.numPages > 1) {
+          pageLabel.textContent = `1 / ${oPdfDoc.numPages}`;
+          pageBar.style.display = '';
+        } else {
+          pageBar.style.display = 'none';
+        }
+      } else {
+        document.getElementById('occ-page-bar').style.display = 'none';
+      }
+      const imgData = isPdf ? await pdfToImage(null, 1) : await resizeForUpload(file);
+      await loadOcclusionImageData(imgData);
+      document.getElementById('occ-file-name').textContent = `✓ ${file.name} (${imgData.w}×${imgData.h})`;
     } catch (err) { document.getElementById('occ-file-name').textContent = `Error: ${err.message}`; }
+  }
+
+  async function changePdfPage(delta) {
+    if (!oPdfDoc) return;
+    const next = oPdfPage + delta;
+    if (next < 1 || next > oPdfDoc.numPages) return;
+    oPdfPage = next;
+    document.getElementById('occ-page-label').textContent = `${oPdfPage} / ${oPdfDoc.numPages}`;
+    showStatus('occ-status', 'info', `Loading page ${oPdfPage}…`);
+    try {
+      const imgData = await pdfToImage(null, oPdfPage);
+      await loadOcclusionImageData(imgData);
+      showStatus('occ-status', 'info', '');
+    } catch (err) { showStatus('occ-status', 'error', err.message); }
   }
 
   function resetOcclusionImage() {
@@ -567,7 +608,8 @@
     document.getElementById('occ-editor').style.display = 'none';
     document.getElementById('occ-file-input').value = '';
     document.getElementById('occ-file-name').textContent = '';
-    oB64 = null; oBoxes = []; oSelected = null; oOp = null;
+    document.getElementById('occ-page-bar').style.display = 'none';
+    oB64 = null; oBoxes = []; oSelected = null; oOp = null; oPdfDoc = null; oPdfPage = 1;
     showStatus('occ-status', 'info', ''); document.getElementById('occ-status').style.display = 'none';
   }
 
