@@ -495,7 +495,7 @@
       const notes = cards.map(c => ({
         deckName: deck,
         modelName: cardType === 'cloze' ? 'Cloze' : 'Basic',
-        fields: cardType === 'cloze' ? { Text: c.text||'', Extra: c.extra||'' } : { Front: c.front||'', Back: c.back||'' },
+        fields: cardType === 'cloze' ? { Text: c.text||'', 'Back Extra': c.extra||'' } : { Front: c.front||'', Back: c.back||'' },
         tags: c.tags || [],
         options: { allowDuplicate: false, duplicateScope: 'deck' }
       }));
